@@ -1,0 +1,3 @@
+- insert:
+    - id: harness-alchemist
+      name: 'harness-alchemist/deepseek'

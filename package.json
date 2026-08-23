@@ -1,0 +1,86 @@
+{
+  "name": "harness-alchemist",
+  "version": "0.1.0",
+  "description": "Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Antigravity, and DeepSeek Harness.",
+  "type": "module",
+  "bin": {
+    "harness-alchemist": "./bin/harness-alchemist.mjs"
+  },
+  "main": "./dist/opencode.js",
+  "types": "./dist/opencode.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/opencode.d.ts",
+      "import": "./dist/opencode.js"
+    },
+    "./deepseek": {
+      "types": "./dist/deepseek.d.ts",
+      "import": "./dist/deepseek.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "lib",
+    "templates",
+    "skills",
+    "cordis.patch.yml",
+    ".claude-plugin/plugin.json",
+    ".codex-plugin/plugin.json",
+    "plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "sync": "node .agents/skills/develop-harness-alchemist/scripts/sync-metadata.mjs",
+    "validate": "node .agents/skills/develop-harness-alchemist/scripts/validate.mjs",
+    "pack:check": "node .agents/skills/develop-harness-alchemist/scripts/check-package.mjs",
+    "verify": "npm run check && npm test && npm run validate && npm run pack:check",
+    "prepack": "npm run verify"
+  },
+  "engines": {
+    "node": ">=22.20.0",
+    "bun": ">=1.2.0"
+  },
+  "keywords": [
+    "agent-skill",
+    "antigravity",
+    "claude-code",
+    "codex",
+    "deepseek",
+    "opencode",
+    "scaffolding"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@opencode-ai/plugin": "^1.18.21"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    },
+    "@opencode-ai/plugin": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@opencode-ai/plugin": "^1.18.21",
+    "typescript": "^5.9.3"
+  },
+  "author": "Haochuan Zhang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lunarmoon26/harness-alchemist"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

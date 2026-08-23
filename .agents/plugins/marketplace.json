@@ -1,0 +1,20 @@
+{
+  "name": "harness-alchemist-plugins",
+  "interface": {
+    "displayName": "Harness Alchemist"
+  },
+  "plugins": [
+    {
+      "name": "harness-alchemist",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

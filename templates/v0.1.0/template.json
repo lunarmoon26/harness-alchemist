@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "id": "v0.1.0",
+  "projectVersion": "0.1.0",
+  "template": "universal-typescript",
+  "runtimes": [
+    "claude-code",
+    "codex",
+    "opencode",
+    "antigravity",
+    "deepseek-harness"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "harness-alchemist-plugins",
+  "description": "Plugin marketplace for Harness Alchemist.",
+  "owner": {
+    "name": "Haochuan Zhang"
+  },
+  "plugins": [
+    {
+      "name": "harness-alchemist",
+      "displayName": "Harness Alchemist",
+      "description": "Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Antigravity, and DeepSeek Harness.",
+      "author": {
+        "name": "Haochuan Zhang"
+      },
+      "source": "./"
+    }
+  ]
+}
