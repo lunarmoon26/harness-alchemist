@@ -1,6 +1,6 @@
 {
   "name": "harness-alchemist",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Antigravity, and DeepSeek Harness.",
   "author": {
     "name": "Haochuan Zhang",
