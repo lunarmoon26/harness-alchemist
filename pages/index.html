@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness Alchemist — One scaffold. Five agent harnesses.</title>
+<meta name="description" content="Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Google Antigravity, and DeepSeek Harness.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='24' font-size='24'%3E%E2%9A%97%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #0b0f17;
+    --bg-soft: #111827;
+    --panel: #0e1420;
+    --border: #1f2a3c;
+    --text: #e5ecf5;
+    --muted: #8b98ab;
+    --accent: #6ea8fe;
+    --accent-2: #4dd6c1;
+    --code-bg: #0a0e16;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --violet: #a78bfa;
+    --pink: #f472b6;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(1200px 500px at 70% -10%, rgba(110,168,254,.14), transparent 60%),
+      radial-gradient(900px 420px at 15% 10%, rgba(77,214,193,.10), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  header.site {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(10px);
+    background: rgba(11,15,23,.78);
+    border-bottom: 1px solid var(--border);
+  }
+  header.site .wrap { display: flex; align-items: center; gap: 18px; height: 58px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 650; letter-spacing: .2px; color: var(--text); }
+  .brand:hover { text-decoration: none; }
+  .brand .glyph {
+    width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center;
+    font-size: 14px;
+    background: linear-gradient(135deg, rgba(110,168,254,.25), rgba(77,214,193,.22));
+    border: 1px solid var(--border);
+  }
+  nav { margin-left: auto; display: flex; gap: 20px; font-size: 14px; }
+  nav a { color: var(--muted); }
+  nav a:hover { color: var(--text); text-decoration: none; }
+
+  .hero { padding: 84px 0 56px; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--accent-2);
+    border: 1px solid var(--border); background: rgba(77,214,193,.07);
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 22px;
+  }
+  h1 {
+    font-size: clamp(38px, 6vw, 62px); line-height: 1.06; letter-spacing: -.02em;
+    font-weight: 750; max-width: 800px;
+  }
+  h1 .grad {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: var(--muted); max-width: 640px; margin-top: 18px; font-size: 17.5px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 15px;
+    border: 1px solid var(--border);
+  }
+  .btn:hover { text-decoration: none; filter: brightness(1.12); }
+  .btn.primary { background: linear-gradient(135deg, #3b82f6, #06b6d4); color: #fff; border: none; }
+  .btn.ghost { color: var(--text); background: rgba(255,255,255,.03); }
+
+  .terminal {
+    margin-top: 44px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px -30px rgba(0,0,0,.7);
+  }
+  .terminal .bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 11px 14px; background: var(--bg-soft); border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .terminal .bar .title { margin-left: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  pre.term {
+    font-family: var(--mono); font-size: 13.5px; line-height: 1.75;
+    padding: 18px 20px; overflow-x: auto; white-space: pre; color: #cbd5e1;
+  }
+  .p { color: var(--accent-2); }   /* prompt */
+  .cmd { color: #e2e8f0; font-weight: 600; }
+  .out { color: var(--muted); }
+  .ok { color: var(--green); }
+  .hl-b { color: var(--accent); } .hl-c { color: var(--violet); } .hl-d { color: var(--pink); } .hl-e { color: var(--amber); }
+
+  section { padding: 64px 0; }
+  section + section { border-top: 1px solid var(--border); }
+  h2 { font-size: 27px; letter-spacing: -.01em; margin-bottom: 10px; }
+  .lead { color: var(--muted); max-width: 680px; margin-bottom: 34px; }
+
+  .grid5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 13px;
+    padding: 18px 18px 16px;
+  }
+  .card h3 { font-size: 15.5px; display: flex; align-items: center; gap: 9px; margin-bottom: 6px; }
+  .badge {
+    font-family: var(--mono); font-size: 10.5px; padding: 2px 8px; border-radius: 999px;
+    background: rgba(52,211,153,.12); color: var(--green); border: 1px solid rgba(52,211,153,.3);
+  }
+  .card p { color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+  .card code.cmdline {
+    display: block; margin-top: 12px; font-family: var(--mono); font-size: 11.5px;
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 10px; color: #b7c4d8; overflow-x: auto; white-space: nowrap;
+  }
+  .card code.cmdline::before { content: "$ "; color: var(--accent-2); }
+
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 900px) { .duo { grid-template-columns: 1fr; } }
+  .codeblock {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 13px; overflow: hidden;
+  }
+  .codeblock .bar { position: relative; }
+  .copy {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    background: rgba(255,255,255,.05); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 9px; cursor: pointer;
+  }
+  .copy:hover { color: var(--text); }
+  .codeblock pre { font-family: var(--mono); font-size: 13px; line-height: 1.7; padding: 16px 18px; overflow-x: auto; color: #cbd5e1; }
+  .cm { color: #64748b; } .kw { color: var(--violet); } .str { color: var(--green); } .fn { color: var(--accent); } .num { color: var(--amber); }
+
+  ul.checks { list-style: none; margin-top: 18px; }
+  ul.checks li { padding-left: 28px; position: relative; margin-bottom: 10px; color: #c6d2e2; }
+  ul.checks li::before { content: "✔"; position: absolute; left: 2px; color: var(--green); font-weight: 700; }
+
+  footer {
+    border-top: 1px solid var(--border); padding: 36px 0 48px;
+    color: var(--muted); font-size: 14px;
+  }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
+  footer a { color: var(--muted); } footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="glyph">⚗️</span> Harness&nbsp;Alchemist</a>
+    <nav>
+      <a href="#harnesses">Harnesses</a>
+      <a href="#contract">Tool contract</a>
+      <a href="#validate">Validation</a>
+      <a href="https://github.com/lunarmoon26/harness-alchemist">GitHub</a>
+      <a href="https://www.npmjs.com/package/harness-alchemist">npm</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <div class="hero wrap">
+    <span class="kicker">v0.1.5 · MIT · zero-dependency CLI · Node 22+ / Bun 1.2+</span>
+    <h1>One scaffold.<br><span class="grad">Five agent harnesses.</span></h1>
+    <p class="sub">
+      Harness Alchemist generates one TypeScript plugin repository that installs natively into
+      Claude Code, Codex/ChatGPT, OpenCode, Google Antigravity, and DeepSeek Harness — with skills
+      that own their runtime and thin adapters for everything else.
+    </p>
+    <div class="cta-row">
+      <span class="btn primary" style="font-family:var(--mono);font-weight:500;">npx harness-alchemist&#64;latest create my-plugin …</span>
+      <a class="btn ghost" href="#harnesses">See it installed everywhere ↓</a>
+    </div>
+
+    <div class="terminal">
+      <div class="bar">
+        <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+        <span class="title">~/Workspace</span>
+      </div>
+<pre class="term"><span class="p">$</span> <span class="cmd">npx harness-alchemist@latest create my-plugin \</span>
+    <span class="cmd">--description "What the plugin does" \</span>
+    <span class="cmd">--author "Example Team" --repository example/my-plugin</span>
+<span class="out">Created universal plugin scaffold at ~/Workspace/my-plugin</span>
+<span class="out">Next: cd my-plugin &amp;&amp; npm install &amp;&amp; npm run verify</span>
+
+<span class="p">$</span> <span class="cmd">cd my-plugin &amp;&amp; npm run verify</span>
+<span class="ok">✔ OpenCode tool delegates to the shared skill script</span>
+<span class="ok">✔ DeepSeek adapter delegates to the shared skill script</span>
+<span class="ok">✔ Validated universal plugin scaffold · 19 files in payload</span></pre>
+    </div>
+  </div>
+
+  <section id="harnesses" class="wrap">
+    <h2>Install-tested, not just scaffolded</h2>
+    <p class="lead">
+      Every install path below was exercised against real CLIs before shipping in the template.
+      Skills load natively where possible; OpenCode and DeepSeek mount the npm package as their runtime.
+    </p>
+    <div class="grid5">
+      <div class="card">
+        <h3>Claude Code <span class="badge">native</span></h3>
+        <p>Marketplace plugin with bundled skills.</p>
+        <code class="cmdline">claude plugin install my-plugin&#64;my-plugins</code>
+      </div>
+      <div class="card">
+        <h3>Codex <span class="badge">native</span></h3>
+        <p>Marketplace snapshot, headless CLI install.</p>
+        <code class="cmdline">codex plugin add my-plugin&#64;my-plugins</code>
+      </div>
+      <div class="card">
+        <h3>OpenCode <span class="badge">npm</span></h3>
+        <p>Plugin hook registers tools that spawn skill scripts.</p>
+        <code class="cmdline">"plugin": ["my-plugin"]</code>
+      </div>
+      <div class="card">
+        <h3>Antigravity <span class="badge">native</span></h3>
+        <p>Nested skill bundle validated by agy.</p>
+        <code class="cmdline">agy plugin install ./my-plugin</code>
+      </div>
+      <div class="card">
+        <h3>DeepSeek Harness <span class="badge">cordis</span></h3>
+        <p>Cordis service plugin mounted through cordis.patch.yml.</p>
+        <code class="cmdline">dsh plugin --profile web add my-plugin</code>
+      </div>
+    </div>
+  </section>
+
+  <section id="contract" class="wrap">
+    <h2>Skills own the runtime</h2>
+    <p class="lead">
+      Product skills ship behavioral <strong>.mjs / .py twins</strong> under <code>skills/&lt;name&gt;/scripts/</code>.
+      The harness entrypoints are thin adapters that delegate to them — so your logic lives in one
+      portable place, not five SDKs.
+    </p>
+    <div class="duo">
+      <div class="codeblock">
+        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">skills/&lt;name&gt;/scripts/main.mjs</span><button class="copy" data-copy="main-mjs">copy</button></div>
+<pre id="main-mjs"><span class="cm">// one JSON object in…</span>
+<span class="kw">const</span> request = <span class="fn">JSON</span>.<span class="fn">parse</span>(stdin)
+
+<span class="cm">// …one JSON result out</span>
+stdout.<span class="fn">write</span>(<span class="fn">JSON</span>.<span class="fn">stringify</span>({
+  <span class="str">ok</span>: <span class="num">true</span>,
+  <span class="str">plugin</span>: <span class="str">"my-plugin"</span>,
+  <span class="str">echo</span>: request,
+}))
+<span class="cm">// non-zero exit + stderr on failure</span></pre>
+      </div>
+      <div class="codeblock">
+        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">src/opencode.ts — thin adapter</span><button class="copy" data-copy="adapter">copy</button></div>
+<pre id="adapter"><span class="kw">import</span> { tool } <span class="kw">from</span> <span class="str">"@opencode-ai/plugin"</span>
+
+<span class="fn">tool</span>({
+  <span class="str">description</span>: <span class="str">"Run the shared-skill workflow"</span>,
+  <span class="str">args</span>: { <span class="str">input</span>: schema.<span class="fn">string</span>() },
+  <span class="fn">execute</span>: <span class="kw">async</span> ({ input }) =&gt;
+    <span class="fn">runSkillScript</span>(<span class="str">"main.mjs"</span>, input),
+})
+<span class="cm">// src/deepseek.ts mirrors this as a</span>
+<span class="cm">// Cordis ctx.provide() service</span></pre>
+      </div>
+    </div>
+    <ul class="checks">
+      <li>Agent Skills spec frontmatter enforced: name/dir match, description ≤1024 chars, compatibility ≤500 chars.</li>
+      <li>SKILL.md references are resolved-checked — broken relative paths fail validation.</li>
+      <li>Twin parity is mechanical: every <code>.py</code> must have its <code>.mjs</code> sibling, and vice versa.</li>
+    </ul>
+  </section>
+
+  <section id="validate" class="wrap">
+    <h2>A validator with two tiers</h2>
+    <p class="lead">
+      <code>npm run verify</code> gates every change: TypeScript checks, tests, scaffold validation,
+      and an npm-payload audit. Python entrypoints get compiled and smoke-executed — without Python installed.
+    </p>
+    <div class="duo">
+      <div class="codeblock">
+        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">Tier B — always on</span></div>
+<pre>Agent Skills frontmatter compliance
+SKILL.md reference resolution
+.mjs / .py twin parity
+manifest cross-consistency (5 harnesses)
+npm payload audit</pre>
+      </div>
+      <div class="codeblock">
+        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">Tier A — WebAssembly sandbox</span></div>
+<pre><span class="cm"># optional pyodide devDependency</span>
+<span class="kw">await</span> <span class="fn">loadPyodide</span>()
+
+<span class="cm">// ast-compiles every Python entrypoint,</span>
+<span class="cm">// smoke-executes the tool contract,</span>
+<span class="cm">// asserts {"ok": true} on stdout —</span>
+<span class="cm">// all inside Node, zero native deps</span></pre>
+      </div>
+    </div>
+    <ul class="checks">
+      <li>Ship releases by pushing a tag: <code>vX.Y.Z</code> triggers verify + publish with npm provenance in CI.</li>
+      <li>Creation never overwrites a non-empty destination; templates are versioned (<code>v0.1.0</code> canonical).</li>
+      <li>Self-hosting: the CLI's own repository is generated by the same canonical template.</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>⚗️ Harness Alchemist — MIT licensed</span>
+    <span>
+      <a href="https://github.com/lunarmoon26/harness-alchemist">GitHub</a> ·
+      <a href="https://www.npmjs.com/package/harness-alchemist">npm</a> ·
+      <a href="https://github.com/lunarmoon26/test-harness-alchemist">live test plugin</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll(".copy").forEach((button) => {
+    button.addEventListener("click", () => {
+      const pre = document.getElementById(button.dataset.copy)
+      navigator.clipboard.writeText(pre.innerText.trim()).then(() => {
+        const old = button.textContent
+        button.textContent = "copied ✓"
+        setTimeout(() => { button.textContent = old }, 1400)
+      })
+    })
+  })
+</script>
+
+</body>
+</html>
