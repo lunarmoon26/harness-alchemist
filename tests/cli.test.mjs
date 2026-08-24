@@ -17,10 +17,11 @@ function run(args, options = {}) {
   })
 }
 
-test("reports its version and canonical templates", () => {
+test("reports its version and canonical templates", async () => {
   const version = run(["version"])
   assert.equal(version.status, 0, version.stderr)
-  assert.equal(version.stdout.trim(), "0.1.0")
+  const packageJson = JSON.parse(await readFile(join(root, "package.json"), "utf8"))
+  assert.equal(version.stdout.trim(), packageJson.version)
 
   const templates = run(["templates"])
   assert.equal(templates.status, 0, templates.stderr)
