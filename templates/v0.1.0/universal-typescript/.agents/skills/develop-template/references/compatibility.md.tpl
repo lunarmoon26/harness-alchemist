@@ -8,7 +8,7 @@
 
 ## Layout Manifest
 
-`harness-alchemist.json` records this repository's layout: `runtime: "npm"`,
+`alchemy.json` records this repository's layout: `runtime: "npm"`,
 the canonical `template` version, `generator`, `generatorVersion`, and
 `createdAt`. It is validated against the published JSON Schema referenced by
 `$schema`. `npm run sync` refreshes `generatorVersion` from `package.json`.

@@ -72,7 +72,7 @@ test("creates and validates a recursively agent-developable project", async () =
     await readFile(join(output, ".github/workflows/npm-publish.yml"), "utf8"),
     /npm publish --provenance --access public/,
   )
-  const layout = JSON.parse(await readFile(join(output, "harness-alchemist.json"), "utf8"))
+  const layout = JSON.parse(await readFile(join(output, "alchemy.json"), "utf8"))
   assert.equal(layout.runtime, "npm")
   assert.equal(layout.template, "v0.1.0")
   assert.equal(layout.generator, "harness-alchemist")
@@ -161,7 +161,7 @@ test("validates an adapted SDK package inside a monorepo", async () => {
     import: "./dist/sdk.js",
     types: "./dist/sdk.d.ts",
   }
-  packageJson.files.push("harness-alchemist.json")
+  packageJson.files.push("alchemy.json")
   delete packageJson.engines
   await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 
@@ -180,7 +180,7 @@ test("validates an adapted SDK package inside a monorepo", async () => {
     private: true,
     workspaces: ["packages/*"],
   }, null, 2)}\n`)
-  await writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify({
+  await writeFile(join(output, "alchemy.json"), `${JSON.stringify({
     pluginRoot: pluginRelative,
     opencodeExport: "./server",
   }, null, 2)}\n`)
@@ -193,7 +193,7 @@ test("validates an adapted SDK package inside a monorepo", async () => {
   assert.equal(nestedValidation.status, 0, nestedValidation.stderr)
   assert.match(nestedValidation.stdout, /Validated universal plugin scaffold at .*[/\\]sdk-monorepo/)
 
-  await writeFile(join(output, "harness-alchemist.json"), "null\n")
+  await writeFile(join(output, "alchemy.json"), "null\n")
   const nullLayout = run(["validate", output])
   assert.notEqual(nullLayout.status, 0)
   assert.match(nullLayout.stderr, /must contain a JSON object/)
@@ -202,7 +202,7 @@ test("validates an adapted SDK package inside a monorepo", async () => {
   const escapedPlugin = join(output, "packages/escaped")
   await mkdir(externalPlugin)
   await symlink(externalPlugin, escapedPlugin, "dir")
-  await writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify({
+  await writeFile(join(output, "alchemy.json"), `${JSON.stringify({
     pluginRoot: "packages/escaped",
     opencodeExport: "./server",
   }, null, 2)}\n`)
@@ -210,7 +210,7 @@ test("validates an adapted SDK package inside a monorepo", async () => {
   assert.notEqual(symlinkLayout.status, 0)
   assert.match(symlinkLayout.stderr, /symlink outside the project root/)
 
-  await writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify({
+  await writeFile(join(output, "alchemy.json"), `${JSON.stringify({
     pluginRoot: pluginRelative,
     opencodeExport: "./server",
   }, null, 2)}\n`)
@@ -287,7 +287,7 @@ test("validates a skills-only monorepo package without npm metadata", async () =
   }
 
   const writeLayout = (layout) =>
-    writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify(layout, null, 2)}\n`)
+    writeFile(join(output, "alchemy.json"), `${JSON.stringify(layout, null, 2)}\n`)
 
   await writeLayout({ pluginRoot: pluginRelative, runtime: "skills" })
   const validation = run(["validate", output])

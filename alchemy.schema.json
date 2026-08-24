@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://unpkg.com/harness-alchemist/harness-alchemist.schema.json",
+  "$id": "https://unpkg.com/harness-alchemist/alchemy.schema.json",
   "title": "Harness Alchemist layout manifest",
   "description": "Declares how a repository adapts the Harness Alchemist universal plugin layout. Omitting the file selects the strict generated single-package layout.",
   "type": "object",

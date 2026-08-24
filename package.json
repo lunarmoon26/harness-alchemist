@@ -25,7 +25,7 @@
     "lib",
     "templates",
     "skills",
-    "harness-alchemist.schema.json",
+    "alchemy.schema.json",
     "cordis.patch.yml",
     ".claude-plugin/plugin.json",
     ".codex-plugin/plugin.json",
