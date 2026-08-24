@@ -16,10 +16,11 @@ Apply the {{DISPLAY_NAME}} workflow to the user's request.
 2. Run the skill entrypoint to perform the smallest complete change:
 
    ```
-   echo '{"request": "..."}' | scripts/main.mjs
+   echo '{"request": "..."}' | node scripts/main.mjs
    ```
 
-   When Python 3.10+ is available, `scripts/main.py` behaves identically.
+   When Python 3.10+ is available, `echo '{"request": "..."}' | python3 scripts/main.py`
+   behaves identically.
 3. Interpret the JSON result; both entrypoints return `{"ok": true, ...}` on
    success and exit non-zero with a stderr diagnostic on failure.
 4. Use harness-provided tools only when they are needed for the workflow.
