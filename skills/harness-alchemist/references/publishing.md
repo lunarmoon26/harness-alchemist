@@ -2,6 +2,17 @@
 
 ## Before Publishing
 
+Run the full verification ladder before distributing:
+
+1. `harness-alchemist validate <project>` — static contract for all harnesses.
+2. The project's own `verify` script — build plus runtime delegation tests.
+3. `harness-alchemist install-check <project>` — drives the local harness CLIs
+   (claude, codex, agy, opencode, dsh) and asserts real discovery. Claude,
+   Codex, and Antigravity verify in both runtimes; the OpenCode plugin leg and
+   DeepSeek Cordis check need npm mode with built adapters. Missing CLIs are
+   reported as skipped. Use `--keep` to leave installs in place for manual
+   inspection, and `--harness <id>` to target one harness.
+
 Run:
 
 ```bash

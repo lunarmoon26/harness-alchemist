@@ -312,6 +312,15 @@ test("validates a skills-only monorepo package without npm metadata", async () =
   const unknownRuntime = run(["validate", output])
   assert.notEqual(unknownRuntime.status, 0)
   assert.match(unknownRuntime.stderr, /runtime must be one of/)
+
+  await writeLayout({ pluginRoot: pluginRelative, runtime: "skills" })
+  const installCheck = run(["install-check", output, "--harness", "opencode", "--json"])
+  assert.equal(installCheck.status, 0, installCheck.stderr)
+  const parsed = JSON.parse(installCheck.stdout)
+  assert.equal(parsed.plugin, "polyglot-monorepo")
+  assert.equal(parsed.runtime, "skills")
+  assert.equal(parsed.results.length, 1)
+  assert.ok(["pass", "skip"].includes(parsed.results[0].status))
 })
 
 test("rejects unknown canonical template versions", async () => {
@@ -376,4 +385,28 @@ test("creates and validates a project under Bun", { skip: !bunAvailable }, async
   assert.equal(creation.status, 0, creation.stderr)
   const validation = run(["validate", output], { runtime: "bun" })
   assert.equal(validation.status, 0, validation.stderr)
+})
+
+test("install-check reports a plan and rejects unknown harnesses", async () => {
+  const help = run(["install-check", "--help"])
+  assert.equal(help.status, 0, help.stderr)
+  assert.match(help.stdout, /--harness <id>/)
+
+  const parent = await mkdtemp(join(tmpdir(), "harness-alchemist-check-"))
+  const output = join(parent, "checked-plugin")
+  const creation = run([
+    "create",
+    output,
+    "--description",
+    "Exercise install-check planning.",
+    "--author",
+    "Example Team",
+    "--repository",
+    "example/checked-plugin",
+  ])
+  assert.equal(creation.status, 0, creation.stderr)
+
+  const unknown = run(["install-check", output, "--harness", "cursor"])
+  assert.equal(unknown.status, 2)
+  assert.match(unknown.stderr, /Unknown harness/)
 })
