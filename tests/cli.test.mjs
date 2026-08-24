@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
-import { readFile, writeFile } from "node:fs/promises"
+import { mkdir, readFile, rename, symlink, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
-import { dirname, join } from "node:path"
+import { delimiter, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { mkdtemp } from "node:fs/promises"
 import { spawnSync } from "node:child_process"
@@ -14,6 +14,7 @@ function run(args, options = {}) {
   return spawnSync(options.runtime ?? process.execPath, [cli, ...args], {
     cwd: options.cwd ?? root,
     encoding: "utf8",
+    env: options.env ?? process.env,
   })
 }
 
@@ -114,6 +115,118 @@ test("does not replace non-empty destinations", async () => {
 
   assert.notEqual(result.status, 0)
   assert.equal(await readFile(output, "utf8"), "keep me")
+})
+
+test("validates an adapted SDK package inside a monorepo", async () => {
+  const parent = await mkdtemp(join(tmpdir(), "harness-alchemist-monorepo-"))
+  const output = join(parent, "sdk-monorepo")
+  const creation = run([
+    "create",
+    output,
+    "--description",
+    "Exercise an adapted SDK package.",
+    "--author",
+    "Example Team",
+    "--repository",
+    "example/sdk-monorepo",
+  ])
+  assert.equal(creation.status, 0, creation.stderr)
+
+  const pluginRelative = "packages/sdk-monorepo"
+  const pluginRoot = join(output, pluginRelative)
+  await mkdir(join(pluginRoot, ".claude-plugin"), { recursive: true })
+  for (const relative of [
+    ".claude-plugin/plugin.json",
+    ".codex-plugin",
+    "cordis.patch.yml",
+    "package.json",
+    "plugin.json",
+    "skills",
+    "src",
+    "tsconfig.json",
+  ]) {
+    await rename(join(output, relative), join(pluginRoot, relative))
+  }
+
+  const packageJsonPath = join(pluginRoot, "package.json")
+  const packageJson = JSON.parse(await readFile(packageJsonPath, "utf8"))
+  packageJson.exports["./server"] = packageJson.exports["."]
+  packageJson.exports["."] = {
+    import: "./dist/sdk.js",
+    types: "./dist/sdk.d.ts",
+  }
+  delete packageJson.engines
+  await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
+
+  const claudeMarketplacePath = join(output, ".claude-plugin/marketplace.json")
+  const claudeMarketplace = JSON.parse(await readFile(claudeMarketplacePath, "utf8"))
+  claudeMarketplace.plugins[0].source = `./${pluginRelative}`
+  await writeFile(claudeMarketplacePath, `${JSON.stringify(claudeMarketplace, null, 2)}\n`)
+
+  const codexMarketplacePath = join(output, ".agents/plugins/marketplace.json")
+  const codexMarketplace = JSON.parse(await readFile(codexMarketplacePath, "utf8"))
+  codexMarketplace.plugins[0].source.path = `./${pluginRelative}`
+  await writeFile(codexMarketplacePath, `${JSON.stringify(codexMarketplace, null, 2)}\n`)
+
+  await writeFile(join(output, "package.json"), `${JSON.stringify({
+    name: "sdk-monorepo-workspace",
+    private: true,
+    workspaces: ["packages/*"],
+  }, null, 2)}\n`)
+  await writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify({
+    pluginRoot: pluginRelative,
+    opencodeExport: "./server",
+  }, null, 2)}\n`)
+
+  const validation = run(["validate", output])
+  assert.equal(validation.status, 0, validation.stderr)
+  assert.match(validation.stdout, /Validated universal plugin scaffold/)
+
+  const nestedValidation = run(["validate"], { cwd: pluginRoot })
+  assert.equal(nestedValidation.status, 0, nestedValidation.stderr)
+  assert.match(nestedValidation.stdout, /Validated universal plugin scaffold at .*[/\\]sdk-monorepo/)
+
+  await writeFile(join(output, "harness-alchemist.json"), "null\n")
+  const nullLayout = run(["validate", output])
+  assert.notEqual(nullLayout.status, 0)
+  assert.match(nullLayout.stderr, /must contain a JSON object/)
+
+  const externalPlugin = join(parent, "external-plugin")
+  const escapedPlugin = join(output, "packages/escaped")
+  await mkdir(externalPlugin)
+  await symlink(externalPlugin, escapedPlugin, "dir")
+  await writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify({
+    pluginRoot: "packages/escaped",
+    opencodeExport: "./server",
+  }, null, 2)}\n`)
+  const symlinkLayout = run(["validate", output])
+  assert.notEqual(symlinkLayout.status, 0)
+  assert.match(symlinkLayout.stderr, /symlink outside the project root/)
+
+  await writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify({
+    pluginRoot: pluginRelative,
+    opencodeExport: "./server",
+  }, null, 2)}\n`)
+  const fakeBin = join(parent, "bin")
+  const externalArgs = join(parent, "claude-args.txt")
+  await mkdir(fakeBin)
+  await writeFile(
+    join(fakeBin, "claude"),
+    "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$HARNESS_CLAUDE_ARGS\"\n",
+    { mode: 0o755 },
+  )
+  const externalValidation = run(["validate", output, "--external"], {
+    env: {
+      ...process.env,
+      PATH: `${fakeBin}${delimiter}${process.env.PATH ?? ""}`,
+      HARNESS_CLAUDE_ARGS: externalArgs,
+    },
+  })
+  assert.equal(externalValidation.status, 0, externalValidation.stderr)
+  assert.deepEqual(
+    (await readFile(externalArgs, "utf8")).trim().split("\n"),
+    ["plugin", "validate", pluginRoot, "--strict"],
+  )
 })
 
 test("rejects unknown canonical template versions", async () => {

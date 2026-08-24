@@ -35,7 +35,7 @@ if (!command || command === "help" || command === "--help" || command === "-h") 
 } else if (["create", "init", "new"].includes(command)) {
   process.exitCode = await runCreate(args)
 } else if (command === "validate") {
-  process.exitCode = await runValidate(args.length > 0 ? args : [process.cwd()])
+  process.exitCode = await runValidate(args)
 } else {
   console.error(`Unknown command: ${command}\n`)
   console.error(usage())

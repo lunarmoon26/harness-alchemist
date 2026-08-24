@@ -53,6 +53,25 @@ cd my-plugin && npm install && npm run verify
 
 Creation only writes to a missing or empty destination. The generated project passes its own gate out of the box: TypeScript checks, runtime delegation tests, scaffold validation, and an npm-payload audit.
 
+## Existing monorepos and SDK packages
+
+`validate` also supports an adapted plugin package inside an existing repository.
+Add `harness-alchemist.json` at the repository root:
+
+```json
+{
+  "pluginRoot": "packages/my-sdk",
+  "opencodeExport": "./server"
+}
+```
+
+`pluginRoot` contains the canonical plugin manifests, shared skills, Cordis
+patch, adapter sources, and publishable package metadata. Repository marketplace
+manifests remain at the project root and point at that package directory.
+`opencodeExport: "./server"` preserves an SDK at the package root while exposing
+the OpenCode adapter through the modern server entrypoint. Omitting the file
+retains the strict generated single-package layout.
+
 ## What you get
 
 | Surface | Purpose |
