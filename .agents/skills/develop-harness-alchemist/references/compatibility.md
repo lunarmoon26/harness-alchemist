@@ -21,6 +21,15 @@ repository-relative `pluginRoot`. Project marketplaces and maintenance guidance
 remain at the repository root; package manifests, product skills, runtime
 sources, Cordis patch, and npm metadata live under `pluginRoot`.
 
+The optional `runtime` field selects the adapted contract:
+
+- `"npm"` (default) — the full generated contract: npm package, OpenCode and
+  Cordis adapters, Cordis patch, and `.mjs`/`.py` script twins.
+- `"skills"` — skills and harness manifests only. npm metadata, adapters, the
+  Cordis patch, and twin parity are not required, enabling polyglot
+  repositories (Python, Go, Rust, Java, C#, Swift) to expose skills without a
+  JavaScript runtime. `opencodeExport` is rejected in this mode.
+
 `opencodeExport` defaults to `.`. The explicit value `./server` allows an SDK to
 retain its package-root export while publishing the OpenCode adapter from
 `dist/opencode.js`. This mode relaxes only the generated package's exact Node

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { mkdir, readFile, rename, symlink, writeFile } from "node:fs/promises"
+import { mkdir, readFile, rename, rm, symlink, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { delimiter, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -227,6 +227,84 @@ test("validates an adapted SDK package inside a monorepo", async () => {
     (await readFile(externalArgs, "utf8")).trim().split("\n"),
     ["plugin", "validate", pluginRoot, "--strict"],
   )
+})
+
+test("validates a skills-only monorepo package without npm metadata", async () => {
+  const parent = await mkdtemp(join(tmpdir(), "harness-alchemist-skills-"))
+  const output = join(parent, "polyglot-monorepo")
+  const creation = run([
+    "create",
+    output,
+    "--description",
+    "Exercise a skills-only adaptation.",
+    "--author",
+    "Example Team",
+    "--repository",
+    "example/polyglot-monorepo",
+  ])
+  assert.equal(creation.status, 0, creation.stderr)
+
+  const pluginRelative = "services/polyglot-plugin"
+  const pluginRoot = join(output, pluginRelative)
+  await mkdir(join(pluginRoot, ".claude-plugin"), { recursive: true })
+  for (const relative of [
+    ".claude-plugin/plugin.json",
+    ".codex-plugin",
+    "plugin.json",
+    "skills",
+  ]) {
+    await rename(join(output, relative), join(pluginRoot, relative))
+  }
+  for (const relative of [
+    "package.json",
+    "cordis.patch.yml",
+    "src",
+    "tests",
+    "tsconfig.json",
+  ]) {
+    await rm(join(output, relative), { recursive: true, force: true })
+  }
+
+  for (const manifest of [
+    ".claude-plugin/marketplace.json",
+    ".agents/plugins/marketplace.json",
+  ]) {
+    const path = join(output, manifest)
+    const parsed = JSON.parse(await readFile(path, "utf8"))
+    if (parsed.plugins[0].source?.source === "local") {
+      parsed.plugins[0].source.path = `./${pluginRelative}`
+    } else {
+      parsed.plugins[0].source = `./${pluginRelative}`
+    }
+    await writeFile(path, `${JSON.stringify(parsed, null, 2)}\n`)
+  }
+
+  const writeLayout = (layout) =>
+    writeFile(join(output, "harness-alchemist.json"), `${JSON.stringify(layout, null, 2)}\n`)
+
+  await writeLayout({ pluginRoot: pluginRelative, runtime: "skills" })
+  const validation = run(["validate", output])
+  assert.equal(validation.status, 0, validation.stderr)
+  assert.match(validation.stdout, /Validated universal plugin scaffold/)
+
+  await rm(join(pluginRoot, "skills/polyglot-monorepo/scripts/main.mjs"))
+  const skillPath = join(pluginRoot, "skills/polyglot-monorepo/SKILL.md")
+  await writeFile(
+    skillPath,
+    (await readFile(skillPath, "utf8")).replaceAll("scripts/main.mjs", "scripts/main.py"),
+  )
+  const pythonOnly = run(["validate", output])
+  assert.equal(pythonOnly.status, 0, pythonOnly.stderr)
+
+  await writeLayout({ pluginRoot: pluginRelative, runtime: "skills", opencodeExport: "./server" })
+  const exportConflict = run(["validate", output])
+  assert.notEqual(exportConflict.status, 0)
+  assert.match(exportConflict.stderr, /opencodeExport requires runtime 'npm'/)
+
+  await writeLayout({ pluginRoot: pluginRelative, runtime: "native" })
+  const unknownRuntime = run(["validate", output])
+  assert.notEqual(unknownRuntime.status, 0)
+  assert.match(unknownRuntime.stderr, /runtime must be one of/)
 })
 
 test("rejects unknown canonical template versions", async () => {
