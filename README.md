@@ -56,11 +56,11 @@ Creation only writes to a missing or empty destination. The generated project pa
 ## Existing monorepos and SDK packages
 
 `validate` also supports an adapted plugin package inside an existing repository.
-Add `harness-alchemist.json` at the repository root:
+Add `alchemy.json` at the repository root:
 
 ```json
 {
-  "$schema": "https://unpkg.com/harness-alchemist/harness-alchemist.schema.json",
+  "$schema": "https://unpkg.com/harness-alchemist/alchemy.schema.json",
   "pluginRoot": "packages/my-sdk",
   "opencodeExport": "./server"
 }
@@ -86,7 +86,7 @@ The optional `runtime` field selects what the adapted package must contain:
   to Claude Code, Codex, Antigravity, and DeepSeek's filesystem skill roots
   without adopting a JavaScript runtime.
 
-Generated projects include a `harness-alchemist.json` manifest recording their
+Generated projects include a `alchemy.json` manifest recording their
 `runtime`, canonical `template` version, `generator`, `generatorVersion`, and
 `createdAt`; `npm run sync` keeps `generatorVersion` aligned with the package
 version.

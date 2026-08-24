@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/harness-alchemist/harness-alchemist.schema.json",
+  "$schema": "https://unpkg.com/harness-alchemist/alchemy.schema.json",
   "runtime": "npm",
   "template": "{{TEMPLATE_VERSION}}",
   "generator": "harness-alchemist",

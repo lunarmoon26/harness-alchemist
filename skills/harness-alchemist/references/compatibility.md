@@ -31,7 +31,7 @@ details.
 ## Existing repositories
 
 Existing monorepos may declare `pluginRoot` and an optional `./server` OpenCode
-export in root `harness-alchemist.json`. The repository root keeps marketplaces
+export in root `alchemy.json`. The repository root keeps marketplaces
 and maintenance guidance; the plugin package keeps product skills, host
 manifests, adapter sources, Cordis patch, and npm metadata. Generated repositories
 remain single-package and need no configuration file.

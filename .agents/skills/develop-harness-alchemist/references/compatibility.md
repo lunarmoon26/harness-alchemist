@@ -16,8 +16,8 @@
 
 ## Layout Manifest
 
-`harness-alchemist.json` is the repository's layout manifest, validated against
-`harness-alchemist.schema.json` (shipped in the npm package; `$schema` points at
+`alchemy.json` is the repository's layout manifest, validated against
+`alchemy.schema.json` (shipped in the npm package; `$schema` points at
 the published copy). Generated projects carry one with `runtime: "npm"`,
 `template`, `generator`, `generatorVersion`, and `createdAt`; `sync-metadata.mjs`
 refreshes `generatorVersion` from `package.json`. Adapted repositories add
@@ -27,7 +27,7 @@ npm mode.
 
 ## Existing repository adaptation
 
-An existing monorepo may place `harness-alchemist.json` at its root with a
+An existing monorepo may place `alchemy.json` at its root with a
 repository-relative `pluginRoot`. Project marketplaces and maintenance guidance
 remain at the repository root; package manifests, product skills, runtime
 sources, Cordis patch, and npm metadata live under `pluginRoot`.
