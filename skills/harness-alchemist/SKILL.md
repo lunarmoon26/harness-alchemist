@@ -16,7 +16,11 @@ replace the generated repository's local maintenance skill.
 2. Read [references/compatibility.md](references/compatibility.md) before choosing paths or manifests.
 3. For a new project, run `harness-alchemist create --help` and use the CLI instead of recreating the structure manually.
 4. After creation, load `.agents/skills/develop-<name>/` in the generated project before maintaining its files.
-5. Run `harness-alchemist validate` and the generated package's `verify` script before reporting completion.
+5. For an existing monorepo or SDK package, use the explicit
+   `harness-alchemist.json` adaptation described in
+   [references/compatibility.md](references/compatibility.md); do not replace the
+   product package root merely to match the generated layout.
+6. Run `harness-alchemist validate` and the generated package's `verify` script before reporting completion.
 
 ## Create A Project
 

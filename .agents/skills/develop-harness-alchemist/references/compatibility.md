@@ -14,6 +14,19 @@
 - Template identifiers include the `v` prefix. Never silently redirect a requested template version.
 - Update v0.1.0 in place until release; preserve its generated behavior and create a new template directory for incompatible changes after release.
 
+## Existing repository adaptation
+
+An existing monorepo may place `harness-alchemist.json` at its root with a
+repository-relative `pluginRoot`. Project marketplaces and maintenance guidance
+remain at the repository root; package manifests, product skills, runtime
+sources, Cordis patch, and npm metadata live under `pluginRoot`.
+
+`opencodeExport` defaults to `.`. The explicit value `./server` allows an SDK to
+retain its package-root export while publishing the OpenCode adapter from
+`dist/opencode.js`. This mode relaxes only the generated package's exact Node
+engine declaration; all shared-skill, manifest, Cordis, metadata, and payload
+checks remain active.
+
 ## Harness-Specific Contract
 
 | Harness | Files | Rule |
