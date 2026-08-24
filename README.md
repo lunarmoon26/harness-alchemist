@@ -72,6 +72,16 @@ manifests remain at the project root and point at that package directory.
 the OpenCode adapter through the modern server entrypoint. Omitting the file
 retains the strict generated single-package layout.
 
+The optional `runtime` field selects what the adapted package must contain:
+
+- `"npm"` (default) — the full generated contract: npm metadata, OpenCode and
+  Cordis adapters, Cordis patch, and `.mjs`/`.py` script twins.
+- `"skills"` — skills and harness manifests only. No npm package, adapters, or
+  Cordis patch are required, and single-language scripts are allowed, so
+  Python, Go, Rust, Java, C#, or Swift repositories can expose their workflows
+  to Claude Code, Codex, Antigravity, and DeepSeek's filesystem skill roots
+  without adopting a JavaScript runtime.
+
 ## What you get
 
 | Surface | Purpose |

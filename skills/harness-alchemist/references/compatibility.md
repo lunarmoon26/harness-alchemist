@@ -36,6 +36,12 @@ and maintenance guidance; the plugin package keeps product skills, host
 manifests, adapter sources, Cordis patch, and npm metadata. Generated repositories
 remain single-package and need no configuration file.
 
+The optional `runtime` field adapts the contract to the repository's language:
+`"npm"` (default) requires the full generated package; `"skills"` accepts
+skills and harness manifests alone — no npm package, adapters, Cordis patch,
+or `.mjs`/`.py` twins — so polyglot repositories can publish workflows to
+Claude Code, Codex, Antigravity, and DeepSeek without a JavaScript runtime.
+
 ## Capability Matrix
 
 | Artifact | Claude | Codex | OpenCode | Antigravity | DeepSeek |
