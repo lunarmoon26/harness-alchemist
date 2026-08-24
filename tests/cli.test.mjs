@@ -55,6 +55,17 @@ test("creates and validates a recursively agent-developable project", async () =
     await readFile(join(output, "skills/recursive-plugin/SKILL.md"), "utf8"),
     /name: recursive-plugin/,
   )
+  for (const relative of [
+    "skills/recursive-plugin/scripts/main.mjs",
+    "skills/recursive-plugin/scripts/main.py",
+    "skills/recursive-plugin/references/tool-contract.md",
+  ]) {
+    await readFile(join(output, relative), "utf8")
+  }
+  assert.match(
+    await readFile(join(output, "src/opencode.ts"), "utf8"),
+    /"recursive-plugin_run": tool\(/,
+  )
   assert.match(
     await readFile(join(output, ".github/workflows/npm-publish.yml"), "utf8"),
     /npm publish --provenance --access public/,

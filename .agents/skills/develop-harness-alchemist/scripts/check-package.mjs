@@ -59,6 +59,9 @@ for (const required of [
    "plugin.json",
    "templates/v0.1.0/universal-typescript/.github/workflows/npm-publish.yml.tpl",
    "templates/v0.1.0/universal-typescript/package.json.tpl",
+   "templates/v0.1.0/universal-typescript/skills/shared-skill/scripts/main.mjs.tpl",
+   "templates/v0.1.0/universal-typescript/skills/shared-skill/scripts/main.py.tpl",
+   "templates/v0.1.0/universal-typescript/skills/shared-skill/references/tool-contract.md.tpl",
    "templates/v0.1.0/template.json",
  ]) {
   if (!files.has(required)) throw new Error(`npm package is missing ${required}`)
