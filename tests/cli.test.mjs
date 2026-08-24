@@ -63,6 +63,10 @@ test("creates and validates a recursively agent-developable project", async () =
     await readFile(join(output, relative), "utf8")
   }
   assert.match(
+    await readFile(join(output, "src/opencode.ts"), "utf8"),
+    /"recursive-plugin_run": tool\(/,
+  )
+  assert.match(
     await readFile(join(output, ".github/workflows/npm-publish.yml"), "utf8"),
     /npm publish --provenance --access public/,
   )

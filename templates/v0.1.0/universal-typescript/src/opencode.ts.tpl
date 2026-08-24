@@ -42,7 +42,7 @@ export function runSkillScript(script: string, payload: string): Promise<string>
 const plugin = (async () => {
   return {
     tool: {
-      {{NAME}}_run: tool({
+      "{{NAME}}_run": tool({
         description:
           "Run the {{DISPLAY_NAME}} shared-skill workflow. Delegates to skills/{{NAME}}/scripts.",
         args: {
