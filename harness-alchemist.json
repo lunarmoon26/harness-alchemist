@@ -1,0 +1,8 @@
+{
+  "$schema": "https://unpkg.com/harness-alchemist/harness-alchemist.schema.json",
+  "runtime": "npm",
+  "template": "v0.1.0",
+  "generator": "harness-alchemist",
+  "generatorVersion": "0.1.5",
+  "createdAt": "2026-08-24T00:00:00.000Z"
+}

@@ -53,6 +53,7 @@ for (const required of [
   "cordis.patch.yml",
   "dist/deepseek.js",
   "dist/opencode.js",
+  "harness-alchemist.json",
   "plugin.json",
 ]) {
   if (!files.has(required)) throw new Error(`npm package is missing ${required}`)
