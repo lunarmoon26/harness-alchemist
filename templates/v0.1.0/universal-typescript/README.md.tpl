@@ -19,7 +19,7 @@ cordis.patch.yml             DeepSeek Harness bundle layer
 plugin.json                  Antigravity plugin manifest
 ```
 
-The initial runtime entrypoints are intentionally inert. Add only the hooks, tools, or services the plugin actually needs.
+The runtime entrypoints are thin adapters that delegate to skill scripts; see `skills/{{NAME}}/references/tool-contract.md` before extending them.
 
 ## Skill Boundaries
 
@@ -54,13 +54,13 @@ npm pack --dry-run
 
 ## GitHub Release Publishing
 
-`.github/workflows/npm-publish.yml` publishes when a GitHub release is
-published. Tag the release as `vX.Y.Z` (or a semver prerelease such as
-`vX.Y.Z-rc.1`); the workflow applies that version, synchronizes manifests,
+`.github/workflows/npm-publish.yml` publishes when a `vX.Y.Z` tag is pushed
+(or a GitHub release with a semver tag such as `vX.Y.Z-rc.1` is published);
+the workflow applies that version, synchronizes manifests,
 verifies the package, and publishes with npm provenance.
 
 Configure the repository `NPM_TOKEN` secret with an npm publish token before
-creating a release.
+pushing the tag.
 
 ## Claude Code
 
@@ -80,9 +80,11 @@ claude plugin validate . --strict
 
 ```bash
 codex plugin marketplace add {{REPOSITORY_SOURCE}}
+codex plugin add {{NAME}}@{{MARKETPLACE}}
+codex plugin list
 ```
 
-Open `/plugins`, install **{{DISPLAY_NAME}}**, and start a new session.
+The `@{{MARKETPLACE}}` suffix is required; a bare plugin name is rejected.
 
 ## OpenCode
 
@@ -95,11 +97,23 @@ After publishing `{{PACKAGE_NAME}}`, add it to `opencode.json`:
 }
 ```
 
-Install the shared skill separately:
+For an unpublished checkout, point the entry at the built adapter instead:
+
+```json
+{
+  "plugin": ["file:///absolute/path/to/{{NAME}}/dist/opencode.js"]
+}
+```
+
+Skills are discovered from `~/.agents/skills/`, not from the OpenCode config
+directory, and symlinked directories are skipped. Copy each shared skill you
+need:
 
 ```bash
-npx skills add {{REPOSITORY_SOURCE}} --agent opencode
+cp -R skills/{{NAME}} ~/.agents/skills/
 ```
+
+Verify with `opencode debug skill`.
 
 ## Google Antigravity
 
@@ -120,11 +134,17 @@ dsh plugin --profile demo add {{PACKAGE_NAME}}
 dsh --profile demo --dump-config
 ```
 
-The bundle loads `{{PACKAGE_NAME}}/deepseek`. Install the shared Agent Skill separately when the workflow needs it:
+For an unpublished checkout, `dsh plugin add` forwards to pnpm, so a local
+path works and stays linked to your working tree:
 
 ```bash
-npx skills add {{REPOSITORY_SOURCE}}
+dsh plugin --profile demo add /absolute/path/to/{{NAME}}
 ```
+
+The bundle loads `{{PACKAGE_NAME}}/deepseek` through `package.json`'s
+`dsh.bundle.patch` entry. Verify composition with
+`dsh --profile demo --dump-config`, which should list an insert for
+`{{NAME}}`.
 
 ## License
 

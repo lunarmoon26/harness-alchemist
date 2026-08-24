@@ -27,9 +27,13 @@ The rich `interface` object is recommended for public presentation but is not re
 
 ```bash
 codex plugin marketplace add owner/repo
+codex plugin add <plugin-name>@<marketplace-name>
+codex plugin list
 ```
 
-Open `/plugins` to install from a configured marketplace, then start a new session. Codex npm marketplace sources download packages without running lifecycle scripts, so published packages must already contain built runtime files.
+The `@marketplace` suffix is required for `codex plugin add`; a bare plugin
+name is rejected. Headless install works without opening `/plugins`, then
+start a new session. Codex npm marketplace sources download packages without running lifecycle scripts, so published packages must already contain built runtime files.
 
 Official references:
 

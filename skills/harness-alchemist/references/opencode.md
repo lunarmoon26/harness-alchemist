@@ -33,11 +33,15 @@ OpenCode accepts npm package names in `opencode.json`:
 
 OpenCode installs npm plugins with Bun at startup. For local development, register an absolute `file://` URL to compiled JavaScript or a direct TypeScript file with all of its dependencies available.
 
-Skills are separate from the npm plugin. Install them from the Git repository:
+Skills are discovered from `~/.agents/skills/` (and project `.agents/skills/`), not from the OpenCode config directory, and symlinked skill directories are skipped. Install them from the Git repository or a checkout:
 
 ```bash
 npx skills add owner/repo --agent opencode
+# or, from a local clone:
+cp -R skills/<name> ~/.agents/skills/
 ```
+
+Verify discovery with `opencode debug skill`.
 
 ## Extension Rules
 

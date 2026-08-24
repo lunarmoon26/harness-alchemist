@@ -49,6 +49,12 @@ dsh plugin --profile demo add @scope/my-plugin
 dsh --profile demo --dump-config
 ```
 
+`dsh plugin add` forwards to pnpm in the profile directory, so an unpublished checkout can be installed by absolute path and stays linked to the working tree:
+
+```bash
+dsh plugin --profile demo add /absolute/path/to/my-plugin
+```
+
 Bundle membership changes require a profile restart. Profile patch edits may hot-reload.
 
 Shared Agent Skills are discovered from project `.agents/skills` and other configured filesystem roots. Package-relative skill assets are not automatically activated by a bundle; install repository skills separately when needed.
