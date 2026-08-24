@@ -4,7 +4,7 @@
   "description": "Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Antigravity, and DeepSeek Harness.",
   "type": "module",
   "bin": {
-    "harness-alchemist": "./bin/harness-alchemist.mjs"
+    "harness-alchemist": "bin/harness-alchemist.mjs"
   },
   "main": "./dist/opencode.js",
   "types": "./dist/opencode.d.ts",
@@ -78,7 +78,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lunarmoon26/harness-alchemist"
+    "url": "git+https://github.com/lunarmoon26/harness-alchemist.git"
   },
   "dsh": {
     "bundle": {
