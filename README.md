@@ -66,7 +66,7 @@ Creation only writes to a missing or empty destination. The generated project pa
 
 ## Supported harnesses
 
-Install paths below are verified against real CLIs — see the [live test plugin](https://github.com/lunarmoon26/test-harness-alchemist).
+Install paths below are verified against real CLIs before shipping in the template.
 
 | Harness | Skills | Runtime | Install |
 | --- | --- | --- | --- |
