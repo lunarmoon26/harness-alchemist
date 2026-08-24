@@ -45,13 +45,14 @@ The package root exports OpenCode. The `./deepseek` subpath exports Cordis. Keep
 
 ## GitHub Release Publishing
 
-`.github/workflows/npm-publish.yml` publishes when a GitHub release is
-published. Tag the release as `vX.Y.Z` (or a semver prerelease such as
-`vX.Y.Z-rc.1`); the workflow applies that version to `package.json`, runs
+`.github/workflows/npm-publish.yml` publishes when a `vX.Y.Z` tag is pushed
+(or a GitHub release with a semver tag such as `vX.Y.Z-rc.1` is published);
+the workflow applies that version to `package.json`, runs
 `npm run sync`, verifies the package, and publishes it with npm provenance.
 
 Configure the repository `NPM_TOKEN` secret with an npm publish token before
-creating a release. The workflow never publishes from pull requests or pushes.
+pushing the tag. The workflow never publishes from pull requests or branch
+pushes.
 
 ## Public Catalog Metadata
 
