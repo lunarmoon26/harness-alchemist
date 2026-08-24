@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://unpkg.com/harness-alchemist/harness-alchemist.schema.json",
+  "title": "Harness Alchemist layout manifest",
+  "description": "Declares how a repository adapts the Harness Alchemist universal plugin layout. Omitting the file selects the strict generated single-package layout.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL of this schema."
+    },
+    "runtime": {
+      "enum": ["npm", "skills"],
+      "default": "npm",
+      "description": "'npm' requires the full generated contract (npm package, OpenCode and Cordis adapters, Cordis patch, .mjs/.py script twins). 'skills' requires skills and harness manifests only and allows single-language scripts."
+    },
+    "pluginRoot": {
+      "type": "string",
+      "default": ".",
+      "pattern": "^(?!\\.{2}(/|\\\\))[^\\u0000]+",
+      "description": "Repository-relative directory containing the plugin manifests, product skills, runtime sources, Cordis patch, and npm metadata. Defaults to the repository root."
+    },
+    "opencodeExport": {
+      "enum": [".", "./server"],
+      "default": ".",
+      "description": "Package export key that exposes the OpenCode adapter. Only meaningful when runtime is 'npm'."
+    },
+    "template": {
+      "type": "string",
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?$",
+      "description": "Canonical template version the project was generated from."
+    },
+    "generator": {
+      "const": "harness-alchemist",
+      "description": "Tool that generated the project."
+    },
+    "generatorVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?$",
+      "description": "Version of the generating harness-alchemist CLI."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp written by the generator."
+    }
+  },
+  "if": {
+    "properties": { "opencodeExport": { "const": "./server" } },
+    "required": ["opencodeExport"]
+  },
+  "then": { "properties": { "runtime": { "const": "npm" } } }
+}

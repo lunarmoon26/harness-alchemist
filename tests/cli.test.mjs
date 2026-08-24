@@ -72,6 +72,12 @@ test("creates and validates a recursively agent-developable project", async () =
     await readFile(join(output, ".github/workflows/npm-publish.yml"), "utf8"),
     /npm publish --provenance --access public/,
   )
+  const layout = JSON.parse(await readFile(join(output, "harness-alchemist.json"), "utf8"))
+  assert.equal(layout.runtime, "npm")
+  assert.equal(layout.template, "v0.1.0")
+  assert.equal(layout.generator, "harness-alchemist")
+  assert.match(layout.generatorVersion, /^\d+\.\d+\.\d+/)
+  assert.equal(new Date(layout.createdAt).getTime(), new Date(layout.createdAt).getTime())
 
   const validation = run(["validate", output])
   assert.equal(validation.status, 0, validation.stderr)
@@ -155,6 +161,7 @@ test("validates an adapted SDK package inside a monorepo", async () => {
     import: "./dist/sdk.js",
     types: "./dist/sdk.d.ts",
   }
+  packageJson.files.push("harness-alchemist.json")
   delete packageJson.engines
   await writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 

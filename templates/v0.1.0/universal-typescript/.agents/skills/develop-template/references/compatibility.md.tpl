@@ -6,6 +6,16 @@
 - `.agents/skills/develop-{{NAME}}/` is repository-local development guidance and is discoverable by Vercel Skills.
 - OpenCode and DeepSeek users install shared skills separately from the npm runtime plugin.
 
+## Layout Manifest
+
+`harness-alchemist.json` records this repository's layout: `runtime: "npm"`,
+the canonical `template` version, `generator`, `generatorVersion`, and
+`createdAt`. It is validated against the published JSON Schema referenced by
+`$schema`. `npm run sync` refreshes `generatorVersion` from `package.json`.
+If this project ever moves into a monorepo, add `pluginRoot` (and optionally
+`opencodeExport: "./server"` for SDK packages); `runtime: "skills"` adapts
+non-JavaScript repositories to skills-only validation.
+
 ## Harness-Specific Contract
 
 | Harness | Files | Rule |

@@ -60,10 +60,14 @@ Add `harness-alchemist.json` at the repository root:
 
 ```json
 {
+  "$schema": "https://unpkg.com/harness-alchemist/harness-alchemist.schema.json",
   "pluginRoot": "packages/my-sdk",
   "opencodeExport": "./server"
 }
 ```
+
+The manifest is JSON-Schema-validated; the schema ships in the npm package and
+is referenced through `$schema`, so editors autocomplete and check every field.
 
 `pluginRoot` contains the canonical plugin manifests, shared skills, Cordis
 patch, adapter sources, and publishable package metadata. Repository marketplace
@@ -81,6 +85,11 @@ The optional `runtime` field selects what the adapted package must contain:
   Python, Go, Rust, Java, C#, or Swift repositories can expose their workflows
   to Claude Code, Codex, Antigravity, and DeepSeek's filesystem skill roots
   without adopting a JavaScript runtime.
+
+Generated projects include a `harness-alchemist.json` manifest recording their
+`runtime`, canonical `template` version, `generator`, `generatorVersion`, and
+`createdAt`; `npm run sync` keeps `generatorVersion` aligned with the package
+version.
 
 ## What you get
 

@@ -121,4 +121,13 @@ for (let index = 0; index < cordisLines.length; index += 1) {
 if (!updatedCordisEntry) throw new Error(`Could not find Cordis entry '${pluginName}' to update`)
 await writeFile(cordisPath, cordisLines.join("\n"))
 
+const layoutPath = join(root, "harness-alchemist.json")
+if (existsSync(layoutPath)) {
+  const layout = await readJson(layoutPath)
+  if (layout.generatorVersion !== packageJson.version) {
+    layout.generatorVersion = packageJson.version
+    await writeJson(layoutPath, layout)
+  }
+}
+
 console.log(`Synchronized plugin manifests from ${packagePath}`)

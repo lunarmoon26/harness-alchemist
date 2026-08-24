@@ -19,6 +19,7 @@
   "files": [
     "dist",
     "skills",
+    "harness-alchemist.json",
     "cordis.patch.yml",
     ".claude-plugin/plugin.json",
     ".codex-plugin/plugin.json",
