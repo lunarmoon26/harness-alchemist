@@ -3,6 +3,7 @@
 import { readFile } from "node:fs/promises"
 
 import { listTemplates, runCreate } from "../lib/create.mjs"
+import { runInstallCheck } from "../lib/install-check.mjs"
 import { runValidate } from "../lib/validate.mjs"
 
 const packageJson = JSON.parse(
@@ -17,6 +18,8 @@ Usage: harness-alchemist <command> [options]
 Commands:
   create <directory>    Create a universal coding-agent plugin repository.
   validate [directory] Validate a generated repository.
+  install-check        Install the plugin into local harness CLIs and verify
+                        discovery (claude, codex, agy, opencode, dsh).
   templates            List bundled canonical templates.
   version              Print the CLI version.
   help                 Show this help.
@@ -36,6 +39,8 @@ if (!command || command === "help" || command === "--help" || command === "-h") 
   process.exitCode = await runCreate(args)
 } else if (command === "validate") {
   process.exitCode = await runValidate(args)
+} else if (command === "install-check") {
+  process.exitCode = await runInstallCheck(args)
 } else {
   console.error(`Unknown command: ${command}\n`)
   console.error(usage())

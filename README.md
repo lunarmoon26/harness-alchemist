@@ -127,6 +127,29 @@ echo '{"request": "hello"}' | node skills/<name>/scripts/main.mjs
 - Non-zero exit with a stderr diagnostic on failure.
 - `scripts/main.py` is a stdlib-only behavioral twin of `scripts/main.mjs`.
 
+## Install-level verification
+
+`install-check` drives your local harness CLIs against the project and asserts
+each one can discover the plugin — the same checks a user's install would
+perform, automated and cleaned up afterwards:
+
+```bash
+npx harness-alchemist@latest install-check /path/to/project
+npx harness-alchemist@latest install-check . --harness agy --json
+```
+
+| Harness | Verified by | Isolation |
+| --- | --- | --- |
+| Claude Code | marketplace add → install → `plugin details` skill inventory | user scope, auto-removed |
+| Codex | marketplace add → plugin add → `plugin list` enabled | plugin cache, auto-removed |
+| Antigravity | `plugin validate` → install → `plugin list` | staged, auto-uninstalled |
+| OpenCode | skills discovery via `debug skill` + plugin startup | temp `XDG_CONFIG_HOME` |
+| DeepSeek | Cordis bundle composed into profile (`--dump-config`) | temp `DSH_HOME` |
+
+Claude, Codex, and Antigravity run in both runtimes; the OpenCode plugin leg
+and the DeepSeek Cordis check require npm mode with built adapters
+(`npm run build` first). Missing CLIs are reported as skipped, not failures.
+
 ## Validation tiers
 
 `npm run validate` always enforces Agent Skills frontmatter compliance, SKILL.md reference resolution, and twin parity. With the optional `pyodide` devDependency installed, Python entrypoints are additionally compiled and smoke-executed inside a WebAssembly CPython sandbox — no native Python required.
