@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="128" viewBox="0 0 560 128" role="img" aria-label="Harness Alchemist">
+  <g transform="translate(24,28)">
+    <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/>
+      <path d="M8.5 2h7"/>
+      <path d="M7 16h10"/>
+    </svg>
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" x="46" y="-6">
+      <path d="m7.5 4.27 9 5.15"/>
+      <path d="M21 8a2 2 0 0 1 0 4 2 2 0 0 1 0-4Z"/>
+      <path d="M3.3 7a8 8 0 0 1 13.87-3.16"/>
+      <circle cx="6" cy="18" r="2"/>
+      <circle cx="18" cy="18" r="2"/>
+      <path d="M12 2v3"/>
+      <path d="M4.91 17 3 20"/>
+      <path d="m19.09 17 1.91 3"/>
+    </svg>
+  </g>
+  <text x="120" y="62" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="34" font-weight="700" fill="#0f172a" letter-spacing="0.5">Harness Alchemist</text>
+  <text x="121" y="92" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="15" fill="#475569">one scaffold &#183; five agent harnesses</text>
+</svg>
