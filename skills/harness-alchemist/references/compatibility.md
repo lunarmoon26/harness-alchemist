@@ -12,12 +12,21 @@ project/
 ├── .claude-plugin/plugin.json
 ├── .codex-plugin/plugin.json
 ├── skills/<name>/SKILL.md
+├── skills/<name>/scripts/main.mjs
+├── skills/<name>/scripts/main.py
+├── skills/<name>/references/tool-contract.md
 ├── src/opencode.ts
 ├── src/deepseek.ts
 ├── cordis.patch.yml
 ├── plugin.json
 └── package.json
 ```
+
+Product skills own their runtime: `skills/<name>/scripts/` holds behavioral
+`.mjs`/`.py` twins (one JSON object in on stdin, one JSON result out on
+stdout), and `src/opencode.ts` and `src/deepseek.ts` stay thin adapters that
+spawn those scripts. See the generated project's tool contract reference for
+details.
 
 ## Capability Matrix
 

@@ -24,6 +24,36 @@
 | Antigravity | `plugin.json` | Skills use nested `<name>/SKILL.md`. |
 | DeepSeek | `src/deepseek.ts`, `cordis.patch.yml` | Function plugin uses named exports and no default export. |
 
+## Skill Script Contract
+
+- Product skills (`skills/<name>/`) own their runtime in `scripts/`.
+  Entrypoints come in behavioral `.mjs`/`.py` twins with identical names.
+- The I/O contract lives in the generated
+  `skills/<name>/references/tool-contract.md`: one JSON object on stdin, one
+  JSON result plus newline on stdout, non-zero exit with a stderr diagnostic
+  on failure.
+- Harness entrypoints are thin adapters that spawn these scripts; workflow
+  logic never lives in `src/opencode.ts` or `src/deepseek.ts`.
+- Maintenance skills under `.agents/skills/` are exempt from the twin rule;
+  they may ship single-language maintainer tooling.
+
+## Validation Tiers
+
+- Tier B (always): Agent Skills frontmatter compliance, SKILL.md relative-path
+  resolution, and `.mjs`/`.py` twin parity for product skills.
+- Tier A (when the optional `pyodide` devDependency resolves): Python
+  entrypoints are additionally compiled and smoke-executed against the tool
+  contract inside a WebAssembly CPython sandbox. Missing pyodide degrades to a
+  warning, never an error. Generated projects do not depend on pyodide.
+
+## DeepSeek Harness Volatility
+
+DeepSeek Harness (`dsh`) is a developer preview built on the Cordis kernel.
+The generated contract pins only the verified surface: function-form named-
+export plugins, `cordis.patch.yml` insert entries resolving npm module names,
+and the `dsh.bundle.patch` package field. Re-verify these against the official
+docs before relying on deeper Cordis services such as tool registration.
+
 ## Metadata
 
 `package.json` owns version, description, author, repository, license, and npm package name. `scripts/sync-metadata.mjs` propagates these values without replacing harness-specific fields.

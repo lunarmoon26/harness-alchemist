@@ -54,6 +54,7 @@
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
     "@opencode-ai/plugin": "^1.18.21",
+    "@types/node": "^26.2.0",
     "typescript": "^5.9.3"
   },
   "author": {{AUTHOR_JSON}},

@@ -56,3 +56,12 @@ npm pack --dry-run
 ```
 
 Static validation is structural evidence, not proof that remote services or host-specific lifecycle events work.
+
+## Skill Runtime
+
+`scripts/main.mjs` (Node/Bun) and `scripts/main.py` (CPython 3.10+) are
+behavioral twins demonstrating this repository's own tool contract: one JSON
+object on stdin, one JSON result plus newline on stdout, non-zero exit with a
+stderr diagnostic on failure. The `src/` adapters delegate to them; keep any
+contract change mirrored in both twins and in
+[references/compatibility.md](references/compatibility.md).
