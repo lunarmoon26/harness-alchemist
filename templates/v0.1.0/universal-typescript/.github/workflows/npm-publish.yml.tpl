@@ -1,8 +1,6 @@
 name: Publish npm package
 
 on:
-  release:
-    types: [published]
   push:
     tags:
       - "v*"
@@ -13,19 +11,24 @@ permissions:
 
 jobs:
   publish:
+    if: github.event.created && !github.event.deleted
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22.20.0
           registry-url: https://registry.npmjs.org
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.0
 
       - name: Resolve release version
         id: version
         shell: bash
         run: |
-          TAG="${{ github.event.release.tag_name || github.ref_name }}"
+          TAG="${{ github.ref_name }}"
           VERSION="${TAG#v}"
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
             echo "::error::Tag '$TAG' is not a valid semver version"
