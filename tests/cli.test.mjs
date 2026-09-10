@@ -82,10 +82,19 @@ test("creates and validates a recursively agent-developable project", async () =
     JSON.parse(await readFile(join(output, "plugin.json"), "utf8")).$schema,
     "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   )
-  assert.match(
-    await readFile(join(output, ".github/workflows/npm-publish.yml"), "utf8"),
-    /npm publish --provenance --access public/,
+  const publishWorkflow = await readFile(
+    join(output, ".github/workflows/npm-publish.yml"),
+    "utf8",
   )
+  assert.equal(
+    publishWorkflow,
+    await readFile(join(root, ".github/workflows/npm-publish.yml"), "utf8"),
+  )
+  assert.match(publishWorkflow, /id-token: write/)
+  assert.match(publishWorkflow, /must match package version/)
+  assert.match(publishWorkflow, /git merge-base --is-ancestor/)
+  assert.match(publishWorkflow, /npm publish --access public/)
+  assert.doesNotMatch(publishWorkflow, /NPM_TOKEN|npm version/)
   const layout = JSON.parse(await readFile(join(output, "alchemy.json"), "utf8"))
   assert.equal(layout.runtime, "npm")
   assert.equal(layout.template, "v0.1.0")

@@ -7,43 +7,59 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   publish:
+    name: Publish package
     if: github.event.created && !github.event.deleted
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write # Required for npm Trusted Publishing OIDC.
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          node-version: 22.20.0
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.19.0"
           registry-url: https://registry.npmjs.org
-      - uses: oven-sh/setup-bun@v2
+          package-manager-cache: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: 1.2.0
+          bun-version: 1.4.0
+          no-cache: true
 
-      - name: Resolve release version
-        id: version
+      - name: Verify release tag
         shell: bash
         run: |
-          TAG="${{ github.ref_name }}"
-          VERSION="${TAG#v}"
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
-            echo "::error::Tag '$TAG' is not a valid semver version"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          EXPECTED_TAG="v${PACKAGE_VERSION}"
+          if [[ "$GITHUB_REF_NAME" != "$EXPECTED_TAG" ]]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' must match package version '$EXPECTED_TAG'"
             exit 1
           fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          TAG_COMMIT="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
+          if ! git merge-base --is-ancestor "$TAG_COMMIT" refs/remotes/origin/main; then
+            echo "::error::Release tag '$GITHUB_REF_NAME' must point to a commit contained in main"
+            exit 1
+          fi
 
       - run: npm ci
-      - name: Set package version from tag
-        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
-      - run: npm run sync
+      - name: Verify synchronized metadata
+        run: |
+          npm run sync
+          git diff --exit-code
       - run: npm run verify
       - name: Verify npm package contents
         run: npm pack --dry-run
-      - name: Publish harness-alchemist
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish npm package
+        run: npm publish --access public
