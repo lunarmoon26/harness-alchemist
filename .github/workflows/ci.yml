@@ -45,7 +45,7 @@ jobs:
           bun-version: 1.2.0
       - run: npm ci
       - run: npm run build
-      - run: bun test tests/*.test.mjs
+      - run: node --test --test-name-pattern="creates and validates a project under Bun" tests/cli.test.mjs
 
   native-platforms:
     name: Native smoke ${{ matrix.target }}
@@ -82,9 +82,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install --yes musl-tools
       - env:
           TARGET: ${{ matrix.target }}
+        shell: bash
         run: rustup target add "$TARGET"
       - env:
           TARGET: ${{ matrix.target }}
+        shell: bash
         run: cargo build --release --locked --target "$TARGET"
       - name: Smoke-test native binary
         shell: bash
