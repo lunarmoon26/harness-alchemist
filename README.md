@@ -161,10 +161,16 @@ and the DeepSeek Cordis check require npm mode with built adapters
 
 ## Release automation
 
+The npm package trusts GitHub Actions workflow `npm-publish.yml` in
+`lunarmoon26/harness-alchemist`. The workflow uses OIDC instead of an
+`NPM_TOKEN`, requires the tag to match the committed package version, and
+accepts only commits contained in `main`.
+
 ```bash
 # bump package.json version, then:
 npm run sync && npm run verify && git commit -am "Release vX.Y.Z" && git push
-git tag vX.Y.Z && git push origin vX.Y.Z   # publishes automatically
+# after the release commit is merged to main:
+git tag vX.Y.Z && git push origin vX.Y.Z   # publishes through npm Trusted Publishing
 ```
 
 ## License
