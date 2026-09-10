@@ -57,10 +57,14 @@ for (const required of [
    "alchemy.schema.json",
    "lib/create.mjs",
    "lib/validate.mjs",
+   "mcp.json",
    "plugin.json",
+   "skills/harness-alchemist/skill-runtime.json",
    "templates/v0.1.0/universal-typescript/.github/workflows/npm-publish.yml.tpl",
    "templates/v0.1.0/universal-typescript/alchemy.json.tpl",
+   "templates/v0.1.0/universal-typescript/mcp.json.tpl",
    "templates/v0.1.0/universal-typescript/package.json.tpl",
+   "templates/v0.1.0/universal-typescript/skills/shared-skill/skill-runtime.json.tpl",
    "templates/v0.1.0/template.json",
  ]) {
   if (!files.has(required)) throw new Error(`npm package is missing ${required}`)

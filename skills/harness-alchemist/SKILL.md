@@ -63,9 +63,9 @@ Static validation is structural evidence, not proof that remote services or host
 
 ## Skill Runtime
 
-`scripts/main.mjs` (Node/Bun) and `scripts/main.py` (CPython 3.10+) are
-behavioral twins demonstrating this repository's own tool contract: one JSON
-object on stdin, one JSON result plus newline on stdout, non-zero exit with a
-stderr diagnostic on failure. The `src/` adapters delegate to them; keep any
-contract change mirrored in both twins and in
+`skill-runtime.json` declares the fixed `scripts/main.mjs` entrypoint and the
+portable tool schema used by MCP, OpenCode, and DeepSeek. `scripts/main.py`
+(CPython 3.10+) is a direct-test behavioral twin. Both scripts accept one JSON
+object on stdin, return one JSON result plus newline on stdout, and exit non-zero
+with a stderr diagnostic on failure. Keep protocol changes synchronized with
 [references/compatibility.md](references/compatibility.md).

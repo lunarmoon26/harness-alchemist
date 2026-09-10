@@ -13,7 +13,7 @@
     "runtime": {
       "enum": ["npm", "skills"],
       "default": "npm",
-      "description": "'npm' requires the full generated contract (npm package, OpenCode and Cordis adapters, Cordis patch, .mjs/.py script twins). 'skills' requires skills and harness manifests only and allows single-language scripts."
+      "description": "'npm' requires the full generated contract (npm package, portable runtime manifests, OpenCode and Cordis adapters, and Cordis patch). 'skills' requires skills, portable runtime manifests, and harness manifests only and allows single-language scripts."
     },
     "pluginRoot": {
       "type": "string",

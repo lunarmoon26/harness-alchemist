@@ -7,8 +7,10 @@ entrypoints for several coding-agent harnesses.
   instructions portable and domain-specific.
 - `.agents/skills/develop-{{NAME}}/` is the project-maintenance workflow. Read
   it before changing manifests, metadata, or runtime entrypoints.
-- Keep OpenCode behavior in `src/opencode.ts`; keep Cordis behavior in
-  `src/deepseek.ts` with named exports and no default export.
+- Keep the portable tool schema and fixed executable in
+  `skills/{{NAME}}/skill-runtime.json`. Keep OpenCode behavior in
+  `src/opencode.ts`; keep Cordis behavior in `src/deepseek.ts` with named
+  exports and no default export.
 - Treat `package.json` as canonical metadata and run `npm run sync` after
   metadata changes.
 - Keep manifest paths inside the repository. Do not add invented connector IDs,

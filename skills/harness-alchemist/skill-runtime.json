@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/lunarmoon26/agent-skill-runtime/main/skill-runtime.schema.json",
+  "manifestVersion": 1,
+  "name": "harness-alchemist",
+  "tools": [
+    {
+      "title": "Run Harness Alchemist",
+      "name": "harness_alchemist_run",
+      "description": "Run the Harness Alchemist shared-skill workflow.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "string",
+            "description": "Requested Harness Alchemist workflow"
+          }
+        },
+        "required": ["request"],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean", "const": true },
+          "plugin": { "type": "string", "const": "harness-alchemist" },
+          "echo": {
+            "type": "object",
+            "properties": {
+              "request": { "type": "string" }
+            },
+            "required": ["request"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["ok", "plugin", "echo"],
+        "additionalProperties": false
+      },
+      "entrypoint": {
+        "engine": "node",
+        "path": "scripts/main.mjs"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    }
+  ]
+}

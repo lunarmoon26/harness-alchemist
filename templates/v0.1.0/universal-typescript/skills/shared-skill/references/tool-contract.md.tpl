@@ -1,7 +1,8 @@
 # {{DISPLAY_NAME}} Tool Contract
 
-The shared skill owns its runtime. Harness entrypoints are thin adapters that
-delegate to the scripts in this directory; they must not contain workflow logic.
+The shared skill owns its runtime. `skill-runtime.json` declares its portable
+tool schema and author-selected executable. Harness entrypoints project that
+manifest and must not contain workflow logic.
 
 ## Entrypoints
 
@@ -10,9 +11,9 @@ delegate to the scripts in this directory; they must not contain workflow logic.
 | `scripts/main.mjs` | Node.js 22+ or Bun 1.2+ | Zero npm dependencies |
 | `scripts/main.py` | CPython 3.10+ | Standard library only |
 
-`main.mjs` and `main.py` are behavioral twins. Any change to one must be
-mirrored in the other, and both must keep the same name so validators can pair
-them.
+`main.mjs` is the starter manifest's fixed model-callable entrypoint.
+`main.py` is a behavioral twin for direct compatibility testing. Any change to
+one must be mirrored in the other so validators can pair them.
 
 ## I/O Contract
 
@@ -26,10 +27,11 @@ them.
 
 - Claude Code, Codex, and Antigravity agents invoke these scripts directly via
   a shell, guided by `SKILL.md`.
-- The OpenCode adapter (`src/opencode.ts`) registers a tool that spawns the
-  scripts and returns their JSON output.
-- The DeepSeek/Cordis adapter (`src/deepseek.ts`) provides a service that
-  spawns the scripts; `cordis.patch.yml` loads it from the published package.
+- The OpenCode adapter (`src/opencode.ts`) projects the manifest through the
+  shared runtime package.
+- The DeepSeek/Cordis adapter (`src/deepseek.ts`) registers the same tool in the
+  Harness tool registry; `cordis.patch.yml` loads it from the npm package.
 
-Prefer `.mjs` when only a JavaScript runtime is guaranteed; use `.py` when
-Python is available or the workflow needs Python-only libraries.
+Change `entrypoint.engine` and `entrypoint.path` together when Python or another
+supported engine becomes the canonical implementation. Never accept an
+executable path from model input.

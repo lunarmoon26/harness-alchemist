@@ -2,7 +2,7 @@
 
 {{DESCRIPTION}}
 
-This repository packages one shared Agent Skill and separate runtime entrypoints for Claude Code, Codex/ChatGPT, OpenCode, Google Antigravity, and DeepSeek Harness/Cordis.
+This repository packages one shared Agent Skill and a portable executable manifest for Claude Code, Codex/ChatGPT, OpenCode, Google Antigravity, and DeepSeek Harness/Cordis.
 
 ## Structure
 
@@ -13,13 +13,15 @@ This repository packages one shared Agent Skill and separate runtime entrypoints
 .agents/skills/              Project development skill
 .github/workflows/           GitHub release publishing
 skills/                      Shared installable Agent Skills
+skills/{{NAME}}/skill-runtime.json  Portable tool schema and fixed executable
 src/opencode.ts              OpenCode npm plugin entrypoint
 src/deepseek.ts              Cordis plugin entrypoint
 cordis.patch.yml             DeepSeek Harness bundle layer
-plugin.json                  Antigravity plugin manifest
+plugin.json                  Agent Plugins metadata
+mcp.json                     Agent Plugins MCP server
 ```
 
-The runtime entrypoints are thin adapters that delegate to skill scripts; see `skills/{{NAME}}/references/tool-contract.md` before extending them.
+The runtime entrypoints are thin adapters that project `skills/{{NAME}}/skill-runtime.json`; see its tool contract before extending it.
 
 ## Skill Boundaries
 

@@ -1,5 +1,19 @@
 {
-  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "harness-alchemist",
-  "description": "Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Antigravity, and DeepSeek Harness."
+  "version": "0.1.8",
+  "description": "Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Antigravity, and DeepSeek Harness.",
+  "author": {
+    "name": "Haochuan Zhang"
+  },
+  "homepage": "git+https://github.com/lunarmoon26/harness-alchemist.git",
+  "repository": "git+https://github.com/lunarmoon26/harness-alchemist.git",
+  "license": "MIT",
+  "keywords": [
+    "agent-skill",
+    "scaffolding",
+    "mcp",
+    "opencode",
+    "deepseek"
+  ]
 }

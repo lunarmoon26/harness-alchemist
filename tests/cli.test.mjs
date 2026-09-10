@@ -58,15 +58,29 @@ test("creates and validates a recursively agent-developable project", async () =
     /name: recursive-plugin/,
   )
   for (const relative of [
+    "mcp.json",
+    "plugin.json",
     "skills/recursive-plugin/scripts/main.mjs",
     "skills/recursive-plugin/scripts/main.py",
     "skills/recursive-plugin/references/tool-contract.md",
+    "skills/recursive-plugin/skill-runtime.json",
   ]) {
     await readFile(join(output, relative), "utf8")
   }
   assert.match(
     await readFile(join(output, "src/opencode.ts"), "utf8"),
-    /"recursive-plugin_run": tool\(/,
+    /createOpenCodePlugin/,
+  )
+  const runtimeManifest = JSON.parse(
+    await readFile(join(output, "skills/recursive-plugin/skill-runtime.json"), "utf8"),
+  )
+  assert.equal(runtimeManifest.tools[0].name, "recursive_plugin_run")
+  assert.equal(runtimeManifest.tools[0].entrypoint.path, "scripts/main.mjs")
+  const generatedPackage = JSON.parse(await readFile(join(output, "package.json"), "utf8"))
+  assert.equal(generatedPackage.dependencies["@lunarmoon26/agent-skill-runtime"], "0.1.0")
+  assert.equal(
+    JSON.parse(await readFile(join(output, "plugin.json"), "utf8")).$schema,
+    "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   )
   assert.match(
     await readFile(join(output, ".github/workflows/npm-publish.yml"), "utf8"),
@@ -82,6 +96,26 @@ test("creates and validates a recursively agent-developable project", async () =
   const validation = run(["validate", output])
   assert.equal(validation.status, 0, validation.stderr)
   assert.match(validation.stdout, /Validated universal plugin scaffold/)
+
+  const mcpPath = join(output, "mcp.json")
+  const mcpManifest = JSON.parse(await readFile(mcpPath, "utf8"))
+  mcpManifest.mcpServers["recursive-plugin"].args.push("--allow", "network")
+  await writeFile(mcpPath, `${JSON.stringify(mcpManifest, null, 2)}\n`)
+  const privilegedMcp = run(["validate", output])
+  assert.notEqual(privilegedMcp.status, 0)
+  assert.match(privilegedMcp.stderr, /mcp\.json must configure 'recursive-plugin'/)
+  mcpManifest.mcpServers["recursive-plugin"].args.splice(-2)
+  await writeFile(mcpPath, `${JSON.stringify(mcpManifest, null, 2)}\n`)
+
+  const manifestPath = join(output, "skills/recursive-plugin/skill-runtime.json")
+  await writeFile(join(output, "skills/outside.mjs"), "")
+  runtimeManifest.tools[0].entrypoint.path = "../outside.mjs"
+  await writeFile(manifestPath, `${JSON.stringify(runtimeManifest, null, 2)}\n`)
+  const escapingRuntime = run(["validate", output])
+  assert.notEqual(escapingRuntime.status, 0)
+  assert.match(escapingRuntime.stderr, /entrypoint\.path.*skill root/)
+  runtimeManifest.tools[0].entrypoint.path = "scripts/main.mjs"
+  await writeFile(manifestPath, `${JSON.stringify(runtimeManifest, null, 2)}\n`)
 
   await writeFile(
     join(output, "cordis.patch.yml"),
@@ -145,6 +179,7 @@ test("validates an adapted SDK package inside a monorepo", async () => {
     ".claude-plugin/plugin.json",
     ".codex-plugin",
     "cordis.patch.yml",
+    "mcp.json",
     "package.json",
     "plugin.json",
     "skills",
@@ -257,6 +292,7 @@ test("validates a skills-only monorepo package without npm metadata", async () =
   for (const relative of [
     ".claude-plugin/plugin.json",
     ".codex-plugin",
+    "mcp.json",
     "plugin.json",
     "skills",
   ]) {
@@ -300,6 +336,10 @@ test("validates a skills-only monorepo package without npm metadata", async () =
     skillPath,
     (await readFile(skillPath, "utf8")).replaceAll("scripts/main.mjs", "scripts/main.py"),
   )
+  const runtimeManifestPath = join(pluginRoot, "skills/polyglot-monorepo/skill-runtime.json")
+  const runtimeManifest = JSON.parse(await readFile(runtimeManifestPath, "utf8"))
+  runtimeManifest.tools[0].entrypoint = { engine: "python", path: "scripts/main.py" }
+  await writeFile(runtimeManifestPath, `${JSON.stringify(runtimeManifest, null, 2)}\n`)
   const pythonOnly = run(["validate", output])
   assert.equal(pythonOnly.status, 0, pythonOnly.stderr)
 

@@ -23,6 +23,7 @@
     "cordis.patch.yml",
     ".claude-plugin/plugin.json",
     ".codex-plugin/plugin.json",
+    "mcp.json",
     "plugin.json",
     "README.md",
     "LICENSE"
@@ -39,6 +40,9 @@
   },
   "engines": {
     "node": ">=22.20.0"
+  },
+  "dependencies": {
+    "@lunarmoon26/agent-skill-runtime": "0.1.0"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",

@@ -28,7 +28,7 @@
 
 ---
 
-Harness Alchemist scaffolds one TypeScript plugin repository that installs natively into **Claude Code**, **Codex/ChatGPT**, **OpenCode**, **Google Antigravity**, and **DeepSeek Harness/Cordis**. Product skills ship behavioral `.mjs`/`.py` script twins; every harness entrypoint is a thin adapter that delegates to them.
+Harness Alchemist scaffolds one TypeScript plugin repository that installs natively into **Claude Code**, **Codex/ChatGPT**, **OpenCode**, **Google Antigravity**, and **DeepSeek Harness/Cordis**. Each product skill declares its fixed executable and portable tool schema in `skill-runtime.json`; host entrypoints delegate through `@lunarmoon26/agent-skill-runtime`.
 
 ## Install
 
@@ -38,7 +38,7 @@ npm install -g harness-alchemist
 npx harness-alchemist@latest create my-plugin --help
 ```
 
-Requires Node.js 22.20+ (Bun 1.2+ also supported). Zero runtime dependencies.
+Requires Node.js 22.20+ (Bun 1.2+ also supported).
 
 ## Quick start
 
@@ -78,10 +78,10 @@ retains the strict generated single-package layout.
 
 The optional `runtime` field selects what the adapted package must contain:
 
-- `"npm"` (default) — the full generated contract: npm metadata, OpenCode and
-  Cordis adapters, Cordis patch, and `.mjs`/`.py` script twins.
-- `"skills"` — skills and harness manifests only. No npm package, adapters, or
-  Cordis patch are required, and single-language scripts are allowed, so
+- `"npm"` (default) — the full generated contract: npm metadata, portable
+  runtime manifests, OpenCode and Cordis adapters, and the Cordis patch.
+- `"skills"` — skills, portable runtime manifests, and harness manifests only.
+  No npm package, adapters, or Cordis patch are required, and single-language scripts are allowed, so
   Python, Go, Rust, Java, C#, or Swift repositories can expose their workflows
   to Claude Code, Codex, Antigravity, and DeepSeek's filesystem skill roots
   without adopting a JavaScript runtime.
@@ -95,10 +95,10 @@ version.
 
 | Surface | Purpose |
 | --- | --- |
-| `skills/<name>/` | Agent Skills spec skill with `.mjs`/`.py` script twins under `scripts/` and a tool-contract reference |
-| `src/opencode.ts` | OpenCode plugin registering tools that spawn the skill scripts |
-| `src/deepseek.ts` + `cordis.patch.yml` | Cordis function plugin providing a service over the same scripts |
-| `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/`, `plugin.json` | Native manifests for Claude Code, Codex, and Antigravity marketplaces |
+| `skills/<name>/` | Agent Skills workflow, portable `skill-runtime.json`, fixed executable, optional tested twin, and tool-contract reference |
+| `src/opencode.ts` | OpenCode plugin projecting the portable runtime manifest as native tools |
+| `src/deepseek.ts` + `cordis.patch.yml` | Cordis function plugin registering the same portable tools |
+| `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/`, `plugin.json`, `mcp.json` | Native and Agent Plugins manifests for Claude Code, Codex, Antigravity, and MCP hosts |
 | `.agents/skills/develop-<name>/` | Repository-maintenance skill so agents can develop the project recursively |
 | `.github/workflows/` | CI plus tag-triggered publish (`vX.Y.Z` → verify → npm provenance) |
 
@@ -112,11 +112,15 @@ Install paths below are verified against real CLIs before shipping in the templa
 | Codex/ChatGPT | bundled natively | — | `codex plugin add <name>@<marketplace>` |
 | OpenCode | via `~/.agents/skills/` | npm package hooks | `"plugin": ["<package>"]` in `opencode.json` |
 | Google Antigravity | nested bundle | — | `agy plugin validate . && agy plugin install .` |
-| DeepSeek Harness | profile filesystem roots | Cordis service plugin | `dsh plugin --profile demo add <package-or-path>` |
+| DeepSeek Harness | profile filesystem roots | Cordis tool plugin | `dsh plugin --profile demo add <package-or-path>` |
 
 ## Skill script contract
 
 Product skills own their logic; adapters never do.
+
+`skills/<name>/skill-runtime.json` declares the model-facing schema and selects
+one author-controlled entrypoint. Hosts validate the same manifest and never
+accept an executable path from model input.
 
 ```bash
 echo '{"request": "hello"}' | node skills/<name>/scripts/main.mjs
@@ -125,7 +129,8 @@ echo '{"request": "hello"}' | node skills/<name>/scripts/main.mjs
 
 - One JSON object on stdin, one JSON result plus newline on stdout.
 - Non-zero exit with a stderr diagnostic on failure.
-- `scripts/main.py` is a stdlib-only behavioral twin of `scripts/main.mjs`.
+- `scripts/main.py` is a stdlib-only behavioral twin for direct compatibility
+  testing; the starter manifest selects `scripts/main.mjs` for host tools.
 
 ## Install-level verification
 
@@ -152,7 +157,7 @@ and the DeepSeek Cordis check require npm mode with built adapters
 
 ## Validation tiers
 
-`npm run validate` always enforces Agent Skills frontmatter compliance, SKILL.md reference resolution, and twin parity. With the optional `pyodide` devDependency installed, Python entrypoints are additionally compiled and smoke-executed inside a WebAssembly CPython sandbox — no native Python required.
+`npm run validate` always enforces Agent Skills frontmatter compliance, SKILL.md reference resolution, runtime-manifest validation, fixed contained entrypoints, and npm-mode twin parity. With the optional `pyodide` devDependency installed, Python twins are additionally compiled and smoke-executed inside a WebAssembly CPython sandbox; Pyodide is validation-only, not a version 1 execution engine.
 
 ## Release automation
 

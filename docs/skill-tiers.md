@@ -32,6 +32,6 @@ supported template version. It is updated in place until release.
 - A default `v0.1.0` project contains a concise local maintenance skill that
   identifies where shared skills, harness manifests, runtime code, and metadata
   belong.
-- Product skills ship `.mjs`/`.py` script twins under `skills/<name>/scripts/`
-  with the tool-contract reference, and both runtime entrypoints delegate to
-  them.
+- Product skills ship `skill-runtime.json`, a fixed entrypoint, and the
+  tool-contract reference under `skills/<name>/`; OpenCode and DeepSeek adapters
+  project that manifest through the shared runtime package.

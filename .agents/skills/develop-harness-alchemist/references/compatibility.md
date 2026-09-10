@@ -9,7 +9,7 @@
 ## Self-Hosting Contract
 
 - The repository root follows the universal layout produced by `templates/v0.1.0/universal-typescript/`, the unreleased canonical scaffold.
-- `bin/harness-alchemist.mjs` is the npm executable; `lib/create.mjs` and `lib/validate.mjs` remain zero-dependency Node/Bun modules.
+- `bin/harness-alchemist.mjs` is the npm executable. Reusable CLI logic remains Node/Bun-compatible in `lib/`; manifest validation delegates to `@lunarmoon26/agent-skill-runtime`.
 - Every generated repository receives `.agents/skills/develop-<name>/`, so its own metadata and harness contracts can be maintained locally.
 - Template identifiers include the `v` prefix. Never silently redirect a requested template version.
 - Update v0.1.0 in place until release; preserve its generated behavior and create a new template directory for incompatible changes after release.
@@ -34,10 +34,10 @@ sources, Cordis patch, and npm metadata live under `pluginRoot`.
 
 The optional `runtime` field selects the adapted contract:
 
-- `"npm"` (default) — the full generated contract: npm package, OpenCode and
-  Cordis adapters, Cordis patch, and `.mjs`/`.py` script twins.
-- `"skills"` — skills and harness manifests only. npm metadata, adapters, the
-  Cordis patch, and twin parity are not required, enabling polyglot
+- `"npm"` (default) — the full generated contract: npm package, portable
+  runtime manifests, OpenCode and Cordis adapters, and the Cordis patch.
+- `"skills"` — skills and portable runtime manifests only. npm metadata,
+  adapters, the Cordis patch, and twin parity are not required, enabling polyglot
   repositories (Python, Go, Rust, Java, C#, Swift) to expose skills without a
   JavaScript runtime. `opencodeExport` is rejected in this mode.
 
@@ -54,38 +54,41 @@ checks remain active.
 | Claude Code | `.claude-plugin/` | Components stay at repository root; marketplace source is `./`. |
 | Codex/ChatGPT | `.codex-plugin/`, `.agents/plugins/` | Local marketplace entries require policy and category. |
 | OpenCode | `src/opencode.ts` | Package root exports a plugin function returning hooks. |
-| Antigravity | `plugin.json` | Skills use nested `<name>/SKILL.md`. |
-| DeepSeek | `src/deepseek.ts`, `cordis.patch.yml` | Function plugin uses named exports and no default export. |
+| Agent Plugins / Antigravity | `plugin.json`, `mcp.json` | Root metadata uses Agent Plugins 1.0; skills use nested `<name>/SKILL.md`. |
+| DeepSeek | `src/deepseek.ts`, `cordis.patch.yml` | Function plugin injects `tools`, uses named exports, and has no default export. |
 
 ## Skill Script Contract
 
-- Product skills (`skills/<name>/`) own their runtime in `scripts/`.
-  Entrypoints come in behavioral `.mjs`/`.py` twins with identical names.
+- Product skills (`skills/<name>/`) own `skill-runtime.json`, which declares
+  portable schemas and an author-selected executable under `scripts/`.
+- Generated npm projects include a behavioral `.py` twin for direct
+  compatibility testing; it is not selected through model input.
 - The I/O contract lives in the generated
   `skills/<name>/references/tool-contract.md`: one JSON object on stdin, one
   JSON result plus newline on stdout, non-zero exit with a stderr diagnostic
   on failure.
-- Harness entrypoints are thin adapters that spawn these scripts; workflow
-  logic never lives in `src/opencode.ts` or `src/deepseek.ts`.
+- Harness entrypoints are thin adapters over the shared runtime package;
+  workflow logic never lives in `src/opencode.ts` or `src/deepseek.ts`.
 - Maintenance skills under `.agents/skills/` are exempt from the twin rule;
   they may ship single-language maintainer tooling.
 
 ## Validation Tiers
 
 - Tier B (always): Agent Skills frontmatter compliance, SKILL.md relative-path
-  resolution, and `.mjs`/`.py` twin parity for product skills.
-- Tier A (when the optional `pyodide` devDependency resolves): Python
-  entrypoints are additionally compiled and smoke-executed against the tool
-  contract inside a WebAssembly CPython sandbox. Missing pyodide degrades to a
-  warning, never an error. Generated projects do not depend on pyodide.
+  resolution, portable runtime-manifest validation, path containment, and
+  npm-mode `.mjs`/`.py` twin parity.
+- Tier A (when the optional `pyodide` devDependency resolves): Python twins are
+  additionally compiled and smoke-executed against the process protocol inside
+  a WebAssembly CPython sandbox. Pyodide is validation-only; missing pyodide
+  degrades to a warning. Generated projects do not depend on pyodide.
 
 ## DeepSeek Harness Volatility
 
 DeepSeek Harness (`dsh`) is a developer preview built on the Cordis kernel.
-The generated contract pins only the verified surface: function-form named-
-export plugins, `cordis.patch.yml` insert entries resolving npm module names,
-and the `dsh.bundle.patch` package field. Re-verify these against the official
-docs before relying on deeper Cordis services such as tool registration.
+The generated contract pins function-form named-export plugins, `tools`
+injection, lifecycle-owned tool registration, `cordis.patch.yml` insert entries
+resolving npm module names, and the `dsh.bundle.patch` package field. Re-verify
+these against official Harness releases before expanding the integration.
 
 ## Metadata
 

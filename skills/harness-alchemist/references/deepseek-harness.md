@@ -30,17 +30,19 @@ Function plugins use named exports and no default export:
 
 ```ts
 import type { Context } from "@deepseek-ai/cordis"
+import { registerDeepSeekTools } from "@lunarmoon26/agent-skill-runtime/deepseek"
 
 export const name = "my-plugin"
+export const inject = ["tools"]
 
-export function apply(ctx: Context): void {
-  // Register lifecycle-owned behavior.
+export async function apply(ctx: Context): Promise<void> {
+  await registerDeepSeekTools(ctx, { pluginRoot: "/resolved/plugin/root" })
 }
 ```
 
 Loader resolves modules as `exports.default ?? exports`. A default export would hide namespace metadata such as `inject` and `Config` from a named-export function plugin.
 
-Declare required services through `inject`. Use `ctx.get()` for optional services. Register cleanup through Cordis effects or returned disposers.
+Declare required services through `inject`. Use `ctx.get()` for optional services. The Harness tool registry owns each portable tool registration as a Cordis effect, so unload removes it.
 
 ## Installation
 
