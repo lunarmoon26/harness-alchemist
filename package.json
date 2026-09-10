@@ -22,7 +22,6 @@
   "files": [
     "dist",
     "bin",
-    "lib",
     "templates",
     "skills",
     "alchemy.json",
@@ -36,14 +35,18 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "check": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test tests/*.test.mjs",
+    "build": "npm run build:adapters && npm run build:native",
+    "build:adapters": "tsc -p tsconfig.json",
+    "build:native": "cargo build --release --locked",
+    "check": "tsc -p tsconfig.json --noEmit && cargo fmt --check && cargo clippy --all-targets --locked -- -D warnings",
+    "test": "npm run build && cargo test --locked && node --test tests/*.test.mjs",
     "sync": "node .agents/skills/develop-harness-alchemist/scripts/sync-metadata.mjs",
-    "validate": "node .agents/skills/develop-harness-alchemist/scripts/validate.mjs",
+    "validate": "node bin/harness-alchemist.mjs validate .",
+    "stage:native": "node bin/harness-alchemist.mjs __stage-native-packages --output .native-packages",
     "pack:check": "node .agents/skills/develop-harness-alchemist/scripts/check-package.mjs",
     "verify": "npm run check && npm test && npm run validate && npm run pack:check",
-    "prepack": "npm run verify"
+    "prepack": "npm run verify",
+    "prepublishOnly": "node -e \"console.error('Refusing to publish the source tree; publish the staged main package.'); process.exit(1)\""
   },
   "engines": {
     "node": ">=22.20.0",
@@ -77,7 +80,6 @@
     "@deepseek-ai/cordis": "^4.0.1",
     "@opencode-ai/plugin": "^1.18.21",
     "@types/node": "^26.2.0",
-    "pyodide": "^314.0.5",
     "typescript": "^5.9.3"
   },
   "author": "Haochuan Zhang",
