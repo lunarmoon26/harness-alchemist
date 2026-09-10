@@ -20,14 +20,15 @@ Apply the {{DISPLAY_NAME}} workflow to the user's request.
    ```
 
    When Python 3.10+ is available, `echo '{"request": "..."}' | python3 scripts/main.py`
-   behaves identically.
+   behaves identically for direct compatibility testing.
 3. Interpret the JSON result; both entrypoints return `{"ok": true, ...}` on
    success and exit non-zero with a stderr diagnostic on failure.
 4. Use harness-provided tools only when they are needed for the workflow.
 5. Verify the result with the project's available checks.
 6. Report the outcome and any unresolved external dependency.
 
-See [the tool contract](references/tool-contract.md) before changing or adding
-entrypoints, and keep the `.mjs` and `.py` twins behaviorally identical.
+`skill-runtime.json` selects the model-callable entrypoint. See
+[the tool contract](references/tool-contract.md) before changing it, and keep
+the `.mjs` and `.py` files behaviorally identical.
 
 Replace this starter workflow with the plugin's domain-specific procedure as the capability develops.

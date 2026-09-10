@@ -4,13 +4,13 @@
 
 ```text
 plugin.json
+mcp.json
 skills/<name>/SKILL.md
 rules/<name>.md
 hooks.json
-mcp_config.json
 ```
 
-Only `plugin.json` is required. The CLI manifest schema accepts a machine-readable name and optional description. Keep the root manifest separate from Claude and Codex manifests.
+`plugin.json` follows Agent Plugins 1.0 and remains separate from the Claude and Codex manifests. `mcp.json` exposes the same executable skill tools to Agent Plugins hosts; current Antigravity CLI releases ignore that file and continue to load the bundled skill.
 
 Current Antigravity Agent Skills use the open Agent Skills directory format with nested `<name>/SKILL.md`. This is also the documented plugin skill shape.
 

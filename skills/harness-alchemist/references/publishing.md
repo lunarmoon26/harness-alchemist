@@ -28,8 +28,8 @@ Inspect the dry-run payload. It must contain:
 - `cordis.patch.yml`.
 - `.claude-plugin/plugin.json`.
 - `.codex-plugin/plugin.json`.
-- Root `plugin.json`.
-- Shared `skills/`.
+- Root Agent Plugins `plugin.json` and `mcp.json`.
+- Shared `skills/`, including each product skill's `skill-runtime.json`.
 - README and license.
 
 Marketplace catalogs are Git repository entrypoints and do not need to ship in the npm tarball.
@@ -52,7 +52,7 @@ npm publish
 
 OpenCode users add the package name to `opencode.json`. DeepSeek users add the same package to a profile with `dsh plugin`.
 
-The package root exports OpenCode. The `./deepseek` subpath exports Cordis. Keep both compiled and included in `files`.
+The package root exports OpenCode. The `./deepseek` subpath exports Cordis. Keep both compiled, include the Agent Plugins manifests, and pin `@lunarmoon26/agent-skill-runtime` in runtime dependencies.
 
 ## GitHub Release Publishing
 

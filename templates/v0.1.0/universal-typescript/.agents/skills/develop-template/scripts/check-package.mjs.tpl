@@ -46,6 +46,7 @@ if (result.status !== 0) throw new Error(result.stderr || result.stdout || "npm 
 const report = JSON.parse(result.stdout)
 const files = new Set(report[0]?.files?.map((file) => file.path) ?? [])
 const packageJson = JSON.parse(await readFile(join(root, "package.json"), "utf8"))
+const pluginName = packageJson.name.split("/").at(-1)
 
 for (const required of [
   ".claude-plugin/plugin.json",
@@ -54,7 +55,9 @@ for (const required of [
   "dist/deepseek.js",
   "dist/opencode.js",
   "alchemy.json",
+  "mcp.json",
   "plugin.json",
+  `skills/${pluginName}/skill-runtime.json`,
 ]) {
   if (!files.has(required)) throw new Error(`npm package is missing ${required}`)
 }

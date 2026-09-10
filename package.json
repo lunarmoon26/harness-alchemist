@@ -25,10 +25,12 @@
     "lib",
     "templates",
     "skills",
+    "alchemy.json",
     "alchemy.schema.json",
     "cordis.patch.yml",
     ".claude-plugin/plugin.json",
     ".codex-plugin/plugin.json",
+    "mcp.json",
     "plugin.json",
     "README.md",
     "LICENSE"
@@ -56,6 +58,9 @@
     "opencode",
     "scaffolding"
   ],
+  "dependencies": {
+    "@lunarmoon26/agent-skill-runtime": "0.1.0"
+  },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
     "@opencode-ai/plugin": "^1.18.21"

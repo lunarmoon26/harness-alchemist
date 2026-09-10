@@ -1,7 +1,7 @@
 ---
 name: develop-harness-alchemist
 description: "Develop, validate, and publish the Harness Alchemist self-hosting CLI and universal coding-agent plugin. Use when modifying its canonical templates, create or validate commands, shared skills, harness manifests, npm package, or runtime entrypoints."
-compatibility: Requires Node.js 22.20+ for build and package scripts; the zero-dependency CLI also supports Bun 1.2+.
+compatibility: Requires Node.js 22.20+ for build and package scripts; the CLI also supports Bun 1.2+.
 ---
 
 # Develop Harness Alchemist
@@ -23,7 +23,8 @@ maintenance skill generated at `.agents/skills/develop-<name>/`. See
 6. Change canonical metadata in `package.json`, then run `npm run sync`.
 7. Run `npm run verify` after every structural or runtime change.
 8. Test both `node bin/harness-alchemist.mjs` and `bun bin/harness-alchemist.mjs` after CLI changes.
-9. Run `npm pack --dry-run` before publishing and inspect the included files.
+9. Keep each product skill's `skill-runtime.json` authoritative for executable paths and portable tool schemas; adapters must not accept a model-selected script path.
+10. Run `npm pack --dry-run` before publishing and inspect the included files.
 
 Do not add fake legal URLs, application IDs, credentials, assets, or connector metadata. Ask for real values when a publishing surface requires them.
 

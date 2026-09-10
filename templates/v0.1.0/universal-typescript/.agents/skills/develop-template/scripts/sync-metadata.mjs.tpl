@@ -77,10 +77,18 @@ Object.assign(codex, {
 })
 await writeJson(codexPath, codex)
 
-const antigravityPath = join(root, "plugin.json")
-const antigravity = await readJson(antigravityPath)
-Object.assign(antigravity, { name: pluginName, description: packageJson.description })
-await writeJson(antigravityPath, antigravity)
+const agentPluginPath = join(root, "plugin.json")
+const agentPlugin = await readJson(agentPluginPath)
+Object.assign(agentPlugin, {
+  name: pluginName,
+  version: packageJson.version,
+  description: packageJson.description,
+  author,
+  homepage: repository,
+  repository,
+  license: packageJson.license,
+})
+await writeJson(agentPluginPath, agentPlugin)
 
 const claudeMarketplacePath = join(root, ".claude-plugin/marketplace.json")
 const claudeMarketplace = await readJson(claudeMarketplacePath)

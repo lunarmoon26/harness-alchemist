@@ -12,21 +12,23 @@ project/
 ├── .claude-plugin/plugin.json
 ├── .codex-plugin/plugin.json
 ├── skills/<name>/SKILL.md
+├── skills/<name>/skill-runtime.json
 ├── skills/<name>/scripts/main.mjs
 ├── skills/<name>/scripts/main.py
 ├── skills/<name>/references/tool-contract.md
 ├── src/opencode.ts
 ├── src/deepseek.ts
 ├── cordis.patch.yml
+├── mcp.json
 ├── plugin.json
 └── package.json
 ```
 
-Product skills own their runtime: `skills/<name>/scripts/` holds behavioral
-`.mjs`/`.py` twins (one JSON object in on stdin, one JSON result out on
-stdout), and `src/opencode.ts` and `src/deepseek.ts` stay thin adapters that
-spawn those scripts. See the generated project's tool contract reference for
-details.
+Product skills own their runtime: `skills/<name>/skill-runtime.json` declares
+portable schemas and one fixed entrypoint, while `scripts/` holds the
+implementation and an optional behavioral twin. `src/opencode.ts` and
+`src/deepseek.ts` stay thin adapters over the shared runtime package. See the
+generated project's tool-contract reference for details.
 
 ## Existing repositories
 
@@ -38,8 +40,8 @@ remain single-package and need no configuration file.
 
 The optional `runtime` field adapts the contract to the repository's language:
 `"npm"` (default) requires the full generated package; `"skills"` accepts
-skills and harness manifests alone — no npm package, adapters, Cordis patch,
-or `.mjs`/`.py` twins — so polyglot repositories can publish workflows to
+skills and portable runtime manifests alone — no npm package, adapters, Cordis
+patch, or script twins — so polyglot repositories can publish workflows to
 Claude Code, Codex, Antigravity, and DeepSeek without a JavaScript runtime.
 
 ## Capability Matrix
@@ -50,7 +52,7 @@ Claude Code, Codex, Antigravity, and DeepSeek without a JavaScript runtime.
 | `.agents/skills/` | Discoverable by installers | Project-native | Project-native | Project-native | Project-native |
 | npm JavaScript entrypoint | Optional dependency support | Optional npm source | Native plugin | No | Bundle module |
 | Hooks | Claude schema | Codex schema | Plugin callbacks | Antigravity schema | Cordis events |
-| MCP | `.mcp.json` | `.mcp.json` / `.app.json` | Config or plugin tools | `mcp_config.json` | Cordis MCP client row |
+| MCP/tools | Agent Plugins `mcp.json` or `.mcp.json` | Agent Plugins `mcp.json` / `.app.json` | Runtime plugin tools | Agent Plugins `mcp.json` | Cordis tool registry |
 
 Only skills follow a broadly shared specification. Hook, agent, permission, MCP, and runtime APIs are not universal merely because their names are similar.
 
