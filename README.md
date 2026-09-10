@@ -38,7 +38,11 @@ npm install -g harness-alchemist
 npx harness-alchemist@latest create my-plugin --help
 ```
 
-Requires Node.js 22.20+ (Bun 1.2+ also supported).
+The CLI implementation is a native Rust binary. npm and Bun installations use a
+small launcher to select a prebuilt macOS, Linux, or Windows binary for x64 or
+arm64. No Rust toolchain or install script is required by CLI users. Repository
+development requires the pinned Rust toolchain in `rust-toolchain.toml`. The npm
+launcher requires Node.js 22.20+; invoking it with Bun 1.2+ is also supported.
 
 ## Quick start
 
@@ -157,14 +161,35 @@ and the DeepSeek Cordis check require npm mode with built adapters
 
 ## Validation tiers
 
-`npm run validate` always enforces Agent Skills frontmatter compliance, SKILL.md reference resolution, runtime-manifest validation, fixed contained entrypoints, and npm-mode twin parity. With the optional `pyodide` devDependency installed, Python twins are additionally compiled and smoke-executed inside a WebAssembly CPython sandbox; Pyodide is validation-only, not a version 1 execution engine.
+`npm run validate` always enforces Agent Skills frontmatter compliance, SKILL.md
+reference resolution, runtime-manifest validation, fixed contained entrypoints,
+npm-mode twin parity, and Python syntax through the native Rust parser. It does
+not execute project Python during structural validation; JavaScript/Python
+behavioral parity is exercised by the runtime tests.
 
 ## Release automation
 
-The npm package trusts GitHub Actions workflow `npm-publish.yml` in
-`lunarmoon26/harness-alchemist`. The workflow uses OIDC instead of an
-`NPM_TOKEN`, requires the tag to match the committed package version, and
-accepts only commits contained in `main`.
+The main package and six platform packages use GitHub Actions workflow
+`npm-publish.yml` in `lunarmoon26/harness-alchemist` as their Trusted Publisher.
+The workflow builds each native target on its matching hosted runner, publishes
+platform packages first, then publishes the main package. It uses OIDC instead
+of an `NPM_TOKEN`, requires the tag to match both `package.json` and
+`Cargo.toml`, and accepts only commits contained in `main`.
+
+Trusted Publisher configuration is package-scoped. Before the first native
+release, create each new platform package once using an interactive npm session
+with 2FA (a reserved `0.0.0` bootstrap version keeps real releases on OIDC), then
+configure its publisher with npm 11.5.1 or newer:
+
+```bash
+npm trust github @lunarmoon26/harness-alchemist-darwin-arm64 \
+  --repo lunarmoon26/harness-alchemist --file npm-publish.yml \
+  --allow-publish --yes
+```
+
+Repeat that command for all six platform package names, then set each package's
+publishing access to **Require two-factor authentication and disallow tokens**.
+The existing main package must retain the same workflow identity and policy.
 
 ```bash
 # bump package.json version, then:

@@ -1,48 +1,74 @@
 #!/usr/bin/env node
 
-import { readFile } from "node:fs/promises"
+import { existsSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
+import { createRequire } from "node:module"
+import { spawnSync } from "node:child_process"
 
-import { listTemplates, runCreate } from "../lib/create.mjs"
-import { runInstallCheck } from "../lib/install-check.mjs"
-import { runValidate } from "../lib/validate.mjs"
+const require = createRequire(import.meta.url)
+const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
+const extension = process.platform === "win32" ? ".exe" : ""
 
-const packageJson = JSON.parse(
-  await readFile(new URL("../package.json", import.meta.url), "utf8"),
-)
-
-function usage() {
-  return `Harness Alchemist ${packageJson.version}
-
-Usage: harness-alchemist <command> [options]
-
-Commands:
-  create <directory>    Create a universal coding-agent plugin repository.
-  validate [directory] Validate a generated repository.
-  install-check        Install the plugin into local harness CLIs and verify
-                        discovery (claude, codex, agy, opencode, dsh).
-  templates            List bundled canonical templates.
-  version              Print the CLI version.
-  help                 Show this help.
-
-Aliases: init and new are aliases for create.`
+const platformPackages = {
+  darwin: {
+    arm64: "@lunarmoon26/harness-alchemist-darwin-arm64",
+    x64: "@lunarmoon26/harness-alchemist-darwin-x64",
+  },
+  linux: {
+    arm64: "@lunarmoon26/harness-alchemist-linux-arm64",
+    x64: "@lunarmoon26/harness-alchemist-linux-x64",
+  },
+  win32: {
+    arm64: "@lunarmoon26/harness-alchemist-win32-arm64",
+    x64: "@lunarmoon26/harness-alchemist-win32-x64",
+  },
 }
 
-const [command, ...args] = process.argv.slice(2)
+function installedBinary() {
+  const packageName = platformPackages[process.platform]?.[process.arch]
+  if (!packageName) return undefined
+  try {
+    return join(dirname(require.resolve(`${packageName}/package.json`)), `harness-alchemist${extension}`)
+  } catch {
+    return undefined
+  }
+}
 
-if (!command || command === "help" || command === "--help" || command === "-h") {
-  console.log(usage())
-} else if (command === "version" || command === "--version" || command === "-v") {
-  console.log(packageJson.version)
-} else if (command === "templates") {
-  console.log(listTemplates())
-} else if (["create", "init", "new"].includes(command)) {
-  process.exitCode = await runCreate(args)
-} else if (command === "validate") {
-  process.exitCode = await runValidate(args)
-} else if (command === "install-check") {
-  process.exitCode = await runInstallCheck(args)
+function localBinary() {
+  for (const profile of ["release", "debug"]) {
+    const candidate = join(packageRoot, "target", profile, `harness-alchemist${extension}`)
+    if (existsSync(candidate)) return candidate
+  }
+  return undefined
+}
+
+const binary = process.env.HARNESS_ALCHEMIST_BINARY || installedBinary() || localBinary()
+
+if (!binary) {
+  const supported = platformPackages[process.platform]?.[process.arch]
+  const reason = supported
+    ? `The optional package '${supported}' is not installed.`
+    : `The platform '${process.platform}-${process.arch}' is not supported.`
+  console.error(`Harness Alchemist could not locate its native binary. ${reason}`)
+  console.error("Reinstall without --no-optional, or install a supported binary from GitHub Releases.")
+  process.exit(1)
+}
+
+const result = spawnSync(binary, process.argv.slice(2), {
+  stdio: "inherit",
+  env: {
+    ...process.env,
+    HARNESS_ALCHEMIST_PACKAGE_ROOT: packageRoot,
+  },
+})
+
+if (result.error) {
+  console.error(`Failed to start Harness Alchemist: ${result.error.message}`)
+  process.exit(1)
+}
+if (result.signal) {
+  process.kill(process.pid, result.signal)
 } else {
-  console.error(`Unknown command: ${command}\n`)
-  console.error(usage())
-  process.exitCode = 2
+  process.exit(result.status ?? 1)
 }

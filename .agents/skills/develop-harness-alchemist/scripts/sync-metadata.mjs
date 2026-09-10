@@ -51,6 +51,19 @@ if (!packageJson.version || !packageJson.description || !repository || !packageJ
   throw new Error("package.json requires version, description, repository, and license")
 }
 
+const cargoPath = join(root, "Cargo.toml")
+if (existsSync(cargoPath)) {
+  const cargo = await readFile(cargoPath, "utf8")
+  const synchronized = cargo.replace(
+    /^(\[package\][\s\S]*?^version\s*=\s*)"[^"]+"/m,
+    `$1"${packageJson.version}"`,
+  )
+  if (synchronized === cargo && !cargo.includes(`version = "${packageJson.version}"`)) {
+    throw new Error("Could not synchronize Cargo.toml package version")
+  }
+  if (synchronized !== cargo) await writeFile(cargoPath, synchronized)
+}
+
 const claudePath = join(root, ".claude-plugin/plugin.json")
 const claude = await readJson(claudePath)
 Object.assign(claude, {

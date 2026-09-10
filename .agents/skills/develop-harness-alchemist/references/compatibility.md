@@ -8,8 +8,9 @@
 
 ## Self-Hosting Contract
 
-- The repository root follows the universal layout produced by `templates/v0.1.0/universal-typescript/`, the unreleased canonical scaffold.
-- `bin/harness-alchemist.mjs` is the npm executable. Reusable CLI logic remains Node/Bun-compatible in `lib/`; manifest validation delegates to `@lunarmoon26/agent-skill-runtime`.
+- The repository root extends the universal layout produced by `templates/v0.1.0/universal-typescript/` with the Rust source and native npm distribution needed by the self-hosting CLI.
+- `bin/harness-alchemist.mjs` is a minimal npm platform launcher. `rust/` owns the native `version`, `templates`, `create`, `validate`, and `install-check` implementation. The OpenCode and Cordis exports remain TypeScript because those hosts load JavaScript modules.
+- `templates/v0.1.0/generated/validate.mjs` is emitted unchanged into generated `v0.1.0` projects. It is a versioned scaffold asset, not the implementation used by the native CLI.
 - Every generated repository receives `.agents/skills/develop-<name>/`, so its own metadata and harness contracts can be maintained locally.
 - Template identifiers include the `v` prefix. Never silently redirect a requested template version.
 - Update v0.1.0 in place until release; preserve its generated behavior and create a new template directory for incompatible changes after release.
@@ -77,10 +78,21 @@ checks remain active.
 - Tier B (always): Agent Skills frontmatter compliance, SKILL.md relative-path
   resolution, portable runtime-manifest validation, path containment, and
   npm-mode `.mjs`/`.py` twin parity.
-- Tier A (when the optional `pyodide` devDependency resolves): Python twins are
-  additionally compiled and smoke-executed against the process protocol inside
-  a WebAssembly CPython sandbox. Pyodide is validation-only; missing pyodide
-  degrades to a warning. Generated projects do not depend on pyodide.
+- The native CLI parses Python twins with Rust and never executes project Python.
+  Behavioral parity remains covered by runtime tests. Generated `v0.1.0`
+  projects retain their local optional-Pyodide validator as part of that
+  immutable scaffold contract.
+
+## Native npm Distribution
+
+- The `harness-alchemist` package contains the launcher, templates, skills, and
+  JavaScript host adapters. Exact-version optional dependencies select one
+  native package for macOS, static-musl Linux, or Windows on x64 or arm64.
+- Platform packages are under `@lunarmoon26`, contain no install scripts or
+  runtime dependencies, and are published before the main package.
+- Every package uses the same `npm-publish.yml` Trusted Publisher and disallows
+  traditional publishing tokens. See `docs/native-cli.md` for the accepted
+  architecture and release consequences.
 
 ## DeepSeek Harness Volatility
 
@@ -92,6 +104,6 @@ these against official Harness releases before expanding the integration.
 
 ## Metadata
 
-`package.json` owns version, description, author, repository, license, and npm package name. `scripts/sync-metadata.mjs` propagates these values without replacing harness-specific fields.
+`package.json` owns version, description, author, repository, license, and npm package name. `scripts/sync-metadata.mjs` propagates these values without replacing harness-specific fields and keeps `Cargo.toml` at the same version.
 
 The npm package basename must remain `harness-alchemist`; the package may be scoped.

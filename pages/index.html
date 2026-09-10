@@ -1,10 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Harness Alchemist — One scaffold. Five agent harnesses.</title>
-<meta name="description" content="Scaffold, validate, and publish portable coding-agent plugins across Claude Code, Codex, OpenCode, Google Antigravity, and DeepSeek Harness.">
+<title>Harness Alchemist — Native tooling for five agent harnesses.</title>
+<meta name="description" content="A native Rust CLI and shared skill runtime for portable coding-agent plugins across Claude Code, Codex, OpenCode, Google Antigravity, and DeepSeek Harness.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236ea8fe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2'/%3E%3Cpath d='M8.5 2h7'/%3E%3Cpath d='M7 16h10'/%3E%3C/svg%3E">
 <style>
   :root {
@@ -36,7 +36,7 @@
   }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
   header.site {
     position: sticky; top: 0; z-index: 20;
@@ -56,6 +56,17 @@
   nav { margin-left: auto; display: flex; gap: 20px; font-size: 14px; }
   nav a { color: var(--muted); }
   nav a:hover { color: var(--text); text-decoration: none; }
+  @media (max-width: 760px) {
+    header.site .wrap {
+      height: auto; min-height: 58px; flex-wrap: wrap; gap: 0 16px;
+      padding-top: 9px; padding-bottom: 9px;
+    }
+    nav {
+      order: 2; width: 100%; margin-left: 0; padding-top: 7px;
+      gap: 14px; overflow-x: auto; scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+  }
 
   .hero { padding: 84px 0 56px; }
   .kicker {
@@ -82,6 +93,12 @@
   .btn:hover { text-decoration: none; filter: brightness(1.12); }
   .btn.primary { background: linear-gradient(135deg, #3b82f6, #06b6d4); color: #fff; border: none; }
   .btn.ghost { color: var(--text); background: rgba(255,255,255,.03); }
+  .btn.command { font-family: var(--mono); font-weight: 500; }
+  @media (max-width: 760px) {
+    .hero { padding-top: 52px; }
+    .cta-row .btn { max-width: 100%; }
+    .cta-row .btn.primary { overflow-wrap: anywhere; }
+  }
 
   .terminal {
     margin-top: 44px;
@@ -96,6 +113,9 @@
     padding: 11px 14px; background: var(--bg-soft); border-bottom: 1px solid var(--border);
   }
   .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.red { background: #ff5f57; }
+  .dot.yellow { background: #febc2e; }
+  .dot.green { background: #28c840; }
   .terminal .bar .title { margin-left: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
   pre.term {
     font-family: var(--mono); font-size: 13.5px; line-height: 1.75;
@@ -135,15 +155,18 @@
     padding: 9px 10px; color: #b7c4d8; overflow-x: auto; white-space: nowrap;
     max-width: 46%;
   }
-  @media (max-width: 760px) { .card code.cmdline { max-width: 100%; } }
+  @media (max-width: 760px) { .card code.cmdline { width: 100%; max-width: 100%; min-width: 0; } }
   .card code.cmdline::before { content: "$ "; color: var(--accent-2); }
 
-  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  @media (max-width: 900px) { .duo { grid-template-columns: 1fr; } }
+  .duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+  @media (max-width: 900px) { .duo { grid-template-columns: minmax(0, 1fr); } }
   .codeblock {
     background: var(--code-bg); border: 1px solid var(--border); border-radius: 13px; overflow: hidden;
   }
   .codeblock .bar { position: relative; }
+  .codeblock .bar .title {
+    padding-left: 4px; color: var(--muted); font: 12px var(--mono);
+  }
   .copy {
     position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
     font-family: var(--mono); font-size: 11px; color: var(--muted);
@@ -164,6 +187,7 @@
   }
   footer .wrap { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
   footer a { color: var(--muted); } footer a:hover { color: var(--text); }
+  .footer-icon { width: 14px; height: 14px; vertical-align: -2px; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -173,7 +197,7 @@
     <a class="brand" href="#top"><span class="glyph"><i data-lucide="flask-conical"></i></span> Harness&nbsp;Alchemist</a>
     <nav>
       <a href="#harnesses">Harnesses</a>
-      <a href="#contract">Tool contract</a>
+      <a href="#contract">Runtime</a>
       <a href="#validate">Validation</a>
       <a href="https://github.com/lunarmoon26/harness-alchemist">GitHub</a>
       <a href="https://www.npmjs.com/package/harness-alchemist">npm</a>
@@ -184,21 +208,23 @@
 <main id="top">
 
   <div class="hero wrap">
-    <span class="kicker">v0.1.5 · MIT · zero-dependency CLI · Node 22+ / Bun 1.2+</span>
+    <span class="kicker">Native Rust CLI · MIT · macOS / Linux / Windows · x64 / arm64</span>
     <h1>One scaffold.<br><span class="grad">Five agent harnesses.</span></h1>
     <p class="sub">
-      Harness Alchemist generates one TypeScript plugin repository that installs natively into
-      Claude Code, Codex/ChatGPT, OpenCode, Google Antigravity, and DeepSeek Harness — with skills
-      that own their runtime and thin adapters for everything else.
+      Harness Alchemist uses a fast native Rust CLI to generate one TypeScript plugin repository
+      for Claude Code, Codex/ChatGPT, OpenCode, Google Antigravity, and DeepSeek Harness. Skills
+      declare one portable contract; <code>@lunarmoon26/agent-skill-runtime</code> powers the thin
+      host adapters that execute it.
     </p>
     <div class="cta-row">
-      <span class="btn primary" style="font-family:var(--mono);font-weight:500;">npx harness-alchemist&#64;latest create my-plugin …</span>
+      <span class="btn primary command">npx harness-alchemist&#64;latest create my-plugin …</span>
       <a class="btn ghost" href="#harnesses">See it installed everywhere ↓</a>
+      <a class="btn ghost" href="https://github.com/lunarmoon26/agent-skill-runtime">Shared runtime ↗</a>
     </div>
 
     <div class="terminal">
       <div class="bar">
-        <span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
         <span class="title">~/Workspace</span>
       </div>
 <pre class="term"><span class="p">$</span> <span class="cmd">npx harness-alchemist@latest create my-plugin \</span>
@@ -208,9 +234,9 @@
 <span class="out">Next: cd my-plugin &amp;&amp; npm install &amp;&amp; npm run verify</span>
 
 <span class="p">$</span> <span class="cmd">cd my-plugin &amp;&amp; npm run verify</span>
-<span class="ok">✔ OpenCode tool delegates to the shared skill script</span>
-<span class="ok">✔ DeepSeek adapter delegates to the shared skill script</span>
-<span class="ok">✔ Validated universal plugin scaffold · 19 files in payload</span></pre>
+<span class="ok">✔ Native Rust validation passed</span>
+<span class="ok">✔ Shared runtime adapters passed</span>
+<span class="ok">✔ Universal npm payload audited</span></pre>
     </div>
   </div>
 
@@ -233,7 +259,7 @@
       </div>
       <div class="card">
         <h3><i data-lucide="package"></i> OpenCode <span class="badge">npm</span></h3>
-        <p>Plugin hook registers tools that spawn skill scripts.</p>
+        <p>Shared runtime maps portable tool manifests into plugin hooks.</p>
         <code class="cmdline">"plugin": ["my-plugin"]</code>
       </div>
       <div class="card">
@@ -243,22 +269,22 @@
       </div>
       <div class="card">
         <h3><i data-lucide="layers"></i> DeepSeek Harness <span class="badge">cordis</span></h3>
-        <p>Cordis service plugin mounted through cordis.patch.yml.</p>
+        <p>Shared runtime registers Cordis tools through cordis.patch.yml.</p>
         <code class="cmdline">dsh plugin --profile web add my-plugin</code>
       </div>
     </div>
   </section>
 
   <section id="contract" class="wrap">
-    <h2>Skills own the runtime</h2>
+    <h2>Skills declare; the shared runtime executes</h2>
     <p class="lead">
-      Product skills ship behavioral <strong>.mjs / .py twins</strong> under <code>skills/&lt;name&gt;/scripts/</code>.
-      The harness entrypoints are thin adapters that delegate to them — so your logic lives in one
-      portable place, not five SDKs.
+      Each product skill owns a <code>skill-runtime.json</code> manifest with its fixed executable,
+      portable JSON schemas, limits, and capabilities. <strong>@lunarmoon26/agent-skill-runtime</strong>
+      discovers that contract, validates every call, and executes the skill behind thin host adapters.
     </p>
     <div class="duo">
       <div class="codeblock">
-        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">skills/&lt;name&gt;/scripts/main.mjs</span><button class="copy" data-copy="main-mjs">copy</button></div>
+        <div class="bar"><span class="title">skills/&lt;name&gt;/scripts/main.mjs</span><button class="copy" type="button" data-copy="main-mjs">copy</button></div>
 <pre id="main-mjs"><span class="cm">// one JSON object in…</span>
 <span class="kw">const</span> request = <span class="fn">JSON</span>.<span class="fn">parse</span>(stdin)
 
@@ -271,56 +297,61 @@ stdout.<span class="fn">write</span>(<span class="fn">JSON</span>.<span class="f
 <span class="cm">// non-zero exit + stderr on failure</span></pre>
       </div>
       <div class="codeblock">
-        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">src/opencode.ts — thin adapter</span><button class="copy" data-copy="adapter">copy</button></div>
-<pre id="adapter"><span class="kw">import</span> { tool } <span class="kw">from</span> <span class="str">"@opencode-ai/plugin"</span>
+        <div class="bar"><span class="title">src/opencode.ts — runtime adapter</span><button class="copy" type="button" data-copy="adapter">copy</button></div>
+<pre id="adapter"><span class="kw">import</span> { <span class="fn">createOpenCodePlugin</span> } <span class="kw">from</span>
+  <span class="str">"@lunarmoon26/agent-skill-runtime/opencode"</span>
 
-<span class="fn">tool</span>({
-  <span class="str">description</span>: <span class="str">"Run the shared-skill workflow"</span>,
-  <span class="str">args</span>: { <span class="str">input</span>: schema.<span class="fn">string</span>() },
-  <span class="fn">execute</span>: <span class="kw">async</span> ({ input }) =&gt;
-    <span class="fn">runSkillScript</span>(<span class="str">"main.mjs"</span>, input),
+<span class="kw">const</span> plugin = <span class="fn">createOpenCodePlugin</span>({
+  pluginRoot,
+  manifestPaths: [
+    <span class="str">"skills/my-plugin/skill-runtime.json"</span>,
+  ],
 })
-<span class="cm">// src/deepseek.ts mirrors this as a</span>
-<span class="cm">// Cordis ctx.provide() service</span></pre>
+
+<span class="kw">export default</span> plugin
+<span class="cm">// DeepSeek uses the same contract via /deepseek</span></pre>
       </div>
     </div>
     <ul class="checks">
-      <li>Agent Skills spec frontmatter enforced: name/dir match, description ≤1024 chars, compatibility ≤500 chars.</li>
-      <li>SKILL.md references are resolved-checked — broken relative paths fail validation.</li>
-      <li>Twin parity is mechanical: every <code>.py</code> must have its <code>.mjs</code> sibling, and vice versa.</li>
+      <li>One manifest pins the executable engine and path; model input can never select an arbitrary script.</li>
+      <li>The runtime enforces schemas, byte limits, timeouts, cancellation, and capability approval.</li>
+      <li>OpenCode and DeepSeek adapters stay thin while Claude, Codex, and Antigravity consume the shared skill.</li>
     </ul>
   </section>
 
   <section id="validate" class="wrap">
-    <h2>A validator with two tiers</h2>
+    <h2>Rust-fast validation without project-code execution</h2>
     <p class="lead">
-      <code>npm run verify</code> gates every change: TypeScript checks, tests, scaffold validation,
-      and an npm-payload audit. Python entrypoints get compiled and smoke-executed — without Python installed.
+      <code>npm run verify</code> gates every change with Rust and TypeScript checks, runtime tests,
+      scaffold validation, and staged npm-package audits. The native CLI parses Python syntax with
+      Ruff but never executes untrusted project Python during structural validation.
     </p>
     <div class="duo">
       <div class="codeblock">
-        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">Tier B — always on</span></div>
-<pre>Agent Skills frontmatter compliance
+        <div class="bar"><span class="title">Native CLI — Rust</span></div>
+<pre><span class="p">$</span> harness-alchemist validate .
+
+Agent Skills frontmatter
 SKILL.md reference resolution
-.mjs / .py twin parity
-manifest cross-consistency (5 harnesses)
-npm payload audit</pre>
+portable runtime manifests
+Python syntax via Ruff
+cross-harness consistency</pre>
       </div>
       <div class="codeblock">
-        <div class="bar"><span class="title" style="font-family:var(--mono);font-size:12px;color:var(--muted);padding-left:4px;">Tier A — WebAssembly sandbox</span></div>
-<pre><span class="cm"># optional pyodide devDependency</span>
-<span class="kw">await</span> <span class="fn">loadPyodide</span>()
+        <div class="bar"><span class="title">npm distribution — no postinstall</span></div>
+<pre>harness-alchemist
+└── optional dependency
+    └── native binary for this OS + CPU
 
-<span class="cm">// ast-compiles every Python entrypoint,</span>
-<span class="cm">// smoke-executes the tool contract,</span>
-<span class="cm">// asserts {"ok": true} on stdout —</span>
-<span class="cm">// all inside Node, zero native deps</span></pre>
+macOS    x64 · arm64
+Linux    x64 · arm64 · static musl
+Windows  x64 · arm64</pre>
       </div>
     </div>
     <ul class="checks">
-      <li>Ship releases by pushing a tag: <code>vX.Y.Z</code> triggers verify + publish with npm provenance in CI.</li>
+      <li>One main package and six native packages publish through npm Trusted Publishing with provenance.</li>
       <li>Creation never overwrites a non-empty destination; templates are versioned (<code>v0.1.0</code> canonical).</li>
-      <li>Self-hosting: the CLI's own repository is generated by the same canonical template.</li>
+      <li>The self-hosting repository extends the same scaffold contract with its Rust CLI and release tooling.</li>
     </ul>
   </section>
 
@@ -328,10 +359,11 @@ npm payload audit</pre>
 
 <footer>
   <div class="wrap">
-    <span><i data-lucide="flask-conical" style="width:14px;height:14px;vertical-align:-2px;color:var(--accent);"></i> Harness Alchemist — MIT licensed</span>
+    <span><i class="footer-icon" data-lucide="flask-conical"></i> Harness Alchemist — MIT licensed</span>
     <span>
       <a href="https://github.com/lunarmoon26/harness-alchemist">GitHub</a> ·
-      <a href="https://www.npmjs.com/package/harness-alchemist">npm</a>
+      <a href="https://www.npmjs.com/package/harness-alchemist">npm</a> ·
+      <a href="https://github.com/lunarmoon26/agent-skill-runtime">agent-skill-runtime</a>
     </span>
   </div>
 </footer>

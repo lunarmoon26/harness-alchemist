@@ -1,4 +1,4 @@
-name: Publish npm package
+name: Publish npm packages
 
 on:
   push:
@@ -13,14 +13,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish:
-    name: Publish package
+  verify:
+    name: Verify release
     if: github.event.created && !github.event.deleted
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      id-token: write # Required for npm Trusted Publishing OIDC.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -29,7 +26,6 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "24.19.0"
-          registry-url: https://registry.npmjs.org
           package-manager-cache: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
@@ -40,7 +36,12 @@ jobs:
         shell: bash
         run: |
           PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          CARGO_VERSION="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "harness-alchemist") | .version')"
           EXPECTED_TAG="v${PACKAGE_VERSION}"
+          if [[ "$CARGO_VERSION" != "$PACKAGE_VERSION" ]]; then
+            echo "::error::Cargo version '$CARGO_VERSION' must match package version '$PACKAGE_VERSION'"
+            exit 1
+          fi
           if [[ "$GITHUB_REF_NAME" != "$EXPECTED_TAG" ]]; then
             echo "::error::Tag '$GITHUB_REF_NAME' must match package version '$EXPECTED_TAG'"
             exit 1
@@ -59,7 +60,110 @@ jobs:
           npm run sync
           git diff --exit-code
       - run: npm run verify
+
+  build-native:
+    name: Build ${{ matrix.target }}
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            executable: harness-alchemist
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            executable: harness-alchemist
+          - runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-musl
+            executable: harness-alchemist
+          - runner: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+            executable: harness-alchemist
+          - runner: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            executable: harness-alchemist.exe
+          - runner: windows-2025
+            target: x86_64-pc-windows-msvc
+            executable: harness-alchemist.exe
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Install musl tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install --yes musl-tools
+      - env:
+          TARGET: ${{ matrix.target }}
+        run: rustup target add "$TARGET"
+      - env:
+          TARGET: ${{ matrix.target }}
+        run: cargo build --release --locked --target "$TARGET"
+      - name: Smoke-test native binary
+        shell: bash
+        env:
+          EXECUTABLE: ${{ matrix.executable }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          "./target/${TARGET}/release/${EXECUTABLE}" version
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/${{ matrix.executable }}
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  publish:
+    name: Publish native and main packages
+    needs: build-native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write # Required for npm Trusted Publishing OIDC.
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.19.0"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: native-artifacts
+      - run: npm ci
+      - run: npm run build:adapters
+      - name: Stage npm packages
+        shell: bash
+        run: |
+          chmod +x native-artifacts/x86_64-unknown-linux-musl/harness-alchemist
+          native-artifacts/x86_64-unknown-linux-musl/harness-alchemist \
+            __stage-native-packages \
+            --output .native-packages \
+            --artifacts native-artifacts \
+            --require-all
       - name: Verify npm package contents
-        run: npm pack --dry-run
-      - name: Publish npm package
-        run: npm publish --access public
+        shell: bash
+        run: |
+          for package in .native-packages/platform/* .native-packages/main; do
+            npm pack "$package" --dry-run --ignore-scripts
+          done
+      - name: Publish platform packages
+        shell: bash
+        run: |
+          for package in .native-packages/platform/*; do
+            name="$(node -p "require('./${package}/package.json').name")"
+            version="$(node -p "require('./${package}/package.json').version")"
+            if npm view "${name}@${version}" version >/dev/null 2>&1; then
+              echo "${name}@${version} is already published"
+            else
+              npm publish "$package" --access public --provenance
+            fi
+          done
+      - name: Publish main package
+        run: npm publish .native-packages/main --access public --provenance
