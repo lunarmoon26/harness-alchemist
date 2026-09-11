@@ -16,7 +16,7 @@ use crate::{path_utils, process};
 const AGENT_PLUGIN_SCHEMA: &str = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json";
 const AGENT_PLUGIN_MCP_SCHEMA: &str = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
 const SKILL_RUNTIME_PACKAGE: &str = "@lunarmoon26/agent-skill-runtime";
-const SKILL_RUNTIME_VERSION: &str = "0.1.0";
+const SKILL_RUNTIME_VERSION: &str = "0.1.1";
 const RUNTIME_MODES: &[&str] = &["npm", "skills"];
 
 const PROJECT_REQUIRED_FILES: &[&str] = &[
@@ -62,8 +62,8 @@ pub fn usage() -> &'static str {
         "Validates a universal Claude, Codex, OpenCode, Antigravity, and DeepSeek\n",
         "plugin scaffold. By default the project is resolved from the current working\n",
         "directory or from the installed package.\n\n",
-        "Product skills are checked against the Agent Skills specification and the\n",
-        "portable skill runtime manifest. Python twin entrypoints are syntax-checked\n",
+        "Product skills are checked against the Agent Skills specification, and every\n",
+        "present runtime manifest is validated. Python entrypoints are syntax-checked\n",
         "without executing project code.\n\n",
         "Options:\n",
         "  --external  Run installed platform validators, currently Claude Code.\n",
@@ -1492,12 +1492,12 @@ pub fn validate_project(project_root: &Path, external: bool) -> ValidationResult
                 }
                 if product_set.contains(skill_file) {
                     let manifest = skill_file.parent().unwrap().join("skill-runtime.json");
-                    if !manifest.exists() {
+                    if !manifest.exists() && (runtime == "npm" || directory_name == plugin_name) {
                         errors.push(format!(
                             "{}: missing skill-runtime.json",
                             skill_file.display()
                         ));
-                    } else {
+                    } else if manifest.exists() {
                         runtime_manifests.push(manifest);
                     }
                     check_product_skill(
@@ -1512,7 +1512,7 @@ pub fn validate_project(project_root: &Path, external: bool) -> ValidationResult
             }
         }
     }
-    if runtime_manifests.len() == product_skills.len() && !runtime_manifests.is_empty() {
+    if !runtime_manifests.is_empty() {
         match validate_runtime_manifests(&plugin_root, &runtime_manifests) {
             Ok(manifests) => {
                 for (manifest_name, path) in manifests {

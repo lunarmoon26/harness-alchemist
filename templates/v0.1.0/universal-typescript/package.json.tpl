@@ -42,7 +42,7 @@
     "node": ">=22.20.0"
   },
   "dependencies": {
-    "@lunarmoon26/agent-skill-runtime": "0.1.0"
+    "@lunarmoon26/agent-skill-runtime": "0.1.1"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",

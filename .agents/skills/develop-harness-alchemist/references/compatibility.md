@@ -37,10 +37,12 @@ The optional `runtime` field selects the adapted contract:
 
 - `"npm"` (default) — the full generated contract: npm package, portable
   runtime manifests, OpenCode and Cordis adapters, and the Cordis patch.
-- `"skills"` — skills and portable runtime manifests only. npm metadata,
-  adapters, the Cordis patch, and twin parity are not required, enabling polyglot
-  repositories (Python, Go, Rust, Java, C#, Swift) to expose skills without a
-  JavaScript runtime. `opencodeExport` is rejected in this mode.
+- `"skills"` — portable skills with selective runtime manifests. Every manifest
+  that exists is validated, while additional prose-only skills may omit one; the
+  primary MCP-targeted skill still requires its manifest. npm metadata, adapters,
+  the Cordis patch, and twin parity are not required, enabling polyglot repositories
+  (Python, Go, Rust, Java, C#, Swift) to expose skills without a JavaScript runtime.
+  `opencodeExport` is rejected in this mode.
 
 `opencodeExport` defaults to `.`. The explicit value `./server` allows an SDK to
 retain its package-root export while publishing the OpenCode adapter from
@@ -60,8 +62,10 @@ checks remain active.
 
 ## Skill Script Contract
 
-- Product skills (`skills/<name>/`) own `skill-runtime.json`, which declares
-  portable schemas and an author-selected executable under `scripts/`.
+- Executable product skills (`skills/<name>/`) own `skill-runtime.json`, which
+  declares portable schemas and an author-selected executable under `scripts/`.
+  Additional prose-only skills remain valid Agent Skills without an artificial
+  runtime tool in adapted `runtime: "skills"` repositories.
 - Generated npm projects include a behavioral `.py` twin for direct
   compatibility testing; it is not selected through model input.
 - The I/O contract lives in the generated
@@ -76,8 +80,10 @@ checks remain active.
 ## Validation Tiers
 
 - Tier B (always): Agent Skills frontmatter compliance, SKILL.md relative-path
-  resolution, portable runtime-manifest validation, path containment, and
-  npm-mode `.mjs`/`.py` twin parity.
+  resolution, validation of every present runtime manifest, path containment,
+  and npm-mode `.mjs`/`.py` twin parity. npm mode requires a manifest for every
+  product skill; skills mode permits additional prose-only skills while keeping
+  the primary skill executable through MCP.
 - The native CLI parses Python twins with Rust and never executes project Python.
   Behavioral parity remains covered by runtime tests. Generated `v0.1.0`
   projects retain their local optional-Pyodide validator as part of that

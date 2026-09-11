@@ -162,9 +162,12 @@ and the DeepSeek Cordis check require npm mode with built adapters
 ## Validation tiers
 
 `npm run validate` always enforces Agent Skills frontmatter compliance, SKILL.md
-reference resolution, runtime-manifest validation, fixed contained entrypoints,
-npm-mode twin parity, and Python syntax through the native Rust parser. It does
-not execute project Python during structural validation; JavaScript/Python
+reference resolution, validation of every present runtime manifest, fixed
+contained entrypoints, npm-mode twin parity, and Python syntax through the native
+Rust parser. Generated npm plugins require a runtime manifest for every product
+skill; adapted skills-only repositories may also contain additional prose-only
+skills while retaining a manifest for the primary MCP-targeted skill. The validator
+does not execute project Python during structural validation; JavaScript/Python
 behavioral parity is exercised by the runtime tests.
 
 ## Release automation
@@ -190,6 +193,8 @@ npm trust github @lunarmoon26/harness-alchemist-darwin-arm64 \
 Repeat that command for all six platform package names, then set each package's
 publishing access to **Require two-factor authentication and disallow tokens**.
 The existing main package must retain the same workflow identity and policy.
+Prerelease versions publish under the `next` dist-tag; stable versions publish
+under `latest`.
 
 ```bash
 # bump package.json version, then:

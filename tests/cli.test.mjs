@@ -7,6 +7,8 @@ import { mkdtemp } from "node:fs/promises"
 import { spawnSync } from "node:child_process"
 import test from "node:test"
 
+import { validateProject as validateGeneratedProject } from "../templates/v0.1.0/generated/validate.mjs"
+
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const cli = join(root, "bin/harness-alchemist.mjs")
 
@@ -93,7 +95,7 @@ test("creates and validates a recursively agent-developable project", async () =
   assert.equal(runtimeManifest.tools[0].name, "recursive_plugin_run")
   assert.equal(runtimeManifest.tools[0].entrypoint.path, "scripts/main.mjs")
   const generatedPackage = JSON.parse(await readFile(join(output, "package.json"), "utf8"))
-  assert.equal(generatedPackage.dependencies["@lunarmoon26/agent-skill-runtime"], "0.1.0")
+  assert.equal(generatedPackage.dependencies["@lunarmoon26/agent-skill-runtime"], "0.1.1")
   assert.equal(
     JSON.parse(await readFile(join(output, "plugin.json"), "utf8")).$schema,
     "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
@@ -106,12 +108,14 @@ test("creates and validates a recursively agent-developable project", async () =
   assert.match(publishWorkflow, /must match package version/)
   assert.match(publishWorkflow, /git merge-base --is-ancestor/)
   assert.match(publishWorkflow, /npm publish --access public/)
+  assert.match(publishWorkflow, /NPM_DIST_TAG=next/)
   assert.doesNotMatch(publishWorkflow, /NPM_TOKEN|npm version/)
   const nativePublishWorkflow = await readFile(join(root, ".github/workflows/npm-publish.yml"), "utf8")
   assert.match(nativePublishWorkflow, /build-native:/)
   assert.match(nativePublishWorkflow, /__stage-native-packages/)
   assert.match(nativePublishWorkflow, /Publish platform packages/)
   assert.match(nativePublishWorkflow, /id-token: write/)
+  assert.match(nativePublishWorkflow, /NPM_DIST_TAG=next/)
   assert.doesNotMatch(nativePublishWorkflow, /NPM_TOKEN|npm version/)
   const layout = JSON.parse(await readFile(join(output, "alchemy.json"), "utf8"))
   assert.equal(layout.runtime, "npm")
@@ -142,6 +146,12 @@ test("creates and validates a recursively agent-developable project", async () =
   assert.notEqual(escapingRuntime.status, 0)
   assert.match(escapingRuntime.stderr, /entrypoint\.path.*skill root/)
   runtimeManifest.tools[0].entrypoint.path = "scripts/main.mjs"
+  await writeFile(manifestPath, `${JSON.stringify(runtimeManifest, null, 2)}\n`)
+
+  await rm(manifestPath)
+  const missingRuntime = run(["validate", output])
+  assert.notEqual(missingRuntime.status, 0)
+  assert.match(missingRuntime.stderr, /missing skill-runtime\.json/)
   await writeFile(manifestPath, `${JSON.stringify(runtimeManifest, null, 2)}\n`)
 
   await writeFile(
@@ -535,9 +545,29 @@ test("validates a skills-only monorepo package without npm metadata", async () =
     writeFile(join(output, "alchemy.json"), `${JSON.stringify(layout, null, 2)}\n`)
 
   await writeLayout({ pluginRoot: pluginRelative, runtime: "skills" })
+  const runtimeManifestPath = join(pluginRoot, "skills/polyglot-monorepo/skill-runtime.json")
+  const proseSkill = join(pluginRoot, "skills/architecture-guidance")
+  await mkdir(proseSkill)
+  await writeFile(
+    join(proseSkill, "SKILL.md"),
+    "---\nname: architecture-guidance\ndescription: Provide architecture guidance without an executable tool.\n---\n\n# Architecture Guidance\n",
+  )
   const validation = run(["validate", output])
   assert.equal(validation.status, 0, validation.stderr)
   assert.match(validation.stdout, /Validated universal plugin scaffold/)
+  assert.deepEqual((await validateGeneratedProject(output)).errors, [])
+
+  const primaryManifest = await readFile(runtimeManifestPath, "utf8")
+  await rm(runtimeManifestPath)
+  const missingPrimaryRuntime = run(["validate", output])
+  assert.notEqual(missingPrimaryRuntime.status, 0)
+  assert.match(missingPrimaryRuntime.stderr, /missing skill-runtime\.json/)
+  assert.ok(
+    (await validateGeneratedProject(output)).errors.some((error) =>
+      error.includes("missing skill-runtime.json"),
+    ),
+  )
+  await writeFile(runtimeManifestPath, primaryManifest)
 
   await rm(join(pluginRoot, "skills/polyglot-monorepo/scripts/main.mjs"))
   const skillPath = join(pluginRoot, "skills/polyglot-monorepo/SKILL.md")
@@ -545,7 +575,6 @@ test("validates a skills-only monorepo package without npm metadata", async () =
     skillPath,
     (await readFile(skillPath, "utf8")).replaceAll("scripts/main.mjs", "scripts/main.py"),
   )
-  const runtimeManifestPath = join(pluginRoot, "skills/polyglot-monorepo/skill-runtime.json")
   const runtimeManifest = JSON.parse(await readFile(runtimeManifestPath, "utf8"))
   runtimeManifest.tools[0].entrypoint = { engine: "python", path: "scripts/main.py" }
   await writeFile(runtimeManifestPath, `${JSON.stringify(runtimeManifest, null, 2)}\n`)
