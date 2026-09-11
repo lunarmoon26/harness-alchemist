@@ -61,5 +61,14 @@ jobs:
       - run: npm run verify
       - name: Verify npm package contents
         run: npm pack --dry-run
+      - name: Select npm dist-tag
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "NPM_DIST_TAG=next" >> "$GITHUB_ENV"
+          else
+            echo "NPM_DIST_TAG=latest" >> "$GITHUB_ENV"
+          fi
       - name: Publish npm package
-        run: npm publish --access public
+        run: npm publish --access public --tag "$NPM_DIST_TAG"

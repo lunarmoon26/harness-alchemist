@@ -56,6 +56,8 @@ also be installed without the launcher when minimum process startup time matters
 Every platform package is built before publication. Release automation publishes
 platform packages first and the main package last, uses npm Trusted Publishing,
 and never downloads executable code during package installation.
+Prerelease versions use npm's `next` dist-tag so the existing stable `latest`
+release remains the default install.
 
 Trusted Publisher relationships can only be configured from an existing npm
 package. Each platform name therefore needs a one-time interactive 2FA bootstrap

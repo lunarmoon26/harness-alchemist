@@ -13,7 +13,7 @@
     "runtime": {
       "enum": ["npm", "skills"],
       "default": "npm",
-      "description": "'npm' requires the full generated contract (npm package, portable runtime manifests, OpenCode and Cordis adapters, and Cordis patch). 'skills' requires skills, portable runtime manifests, and harness manifests only and allows single-language scripts."
+      "description": "'npm' requires the full generated contract (npm package, a portable runtime manifest for every product skill, OpenCode and Cordis adapters, and Cordis patch). 'skills' requires portable skills and harness manifests, validates runtime manifests when present, and allows additional prose-only skills and single-language scripts while retaining a manifest for the primary MCP-targeted skill."
     },
     "pluginRoot": {
       "type": "string",

@@ -11,7 +11,7 @@ import { discoverSkillTools } from "@lunarmoon26/agent-skill-runtime"
 const AGENT_PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 const AGENT_PLUGIN_MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 const SKILL_RUNTIME_PACKAGE = "@lunarmoon26/agent-skill-runtime"
-const SKILL_RUNTIME_VERSION = "0.1.0"
+const SKILL_RUNTIME_VERSION = "0.1.1"
 
 const PROJECT_REQUIRED_FILES = [
   ".agents/plugins/marketplace.json",
@@ -46,9 +46,9 @@ Validates a universal Claude, Codex, OpenCode, Antigravity, and DeepSeek
 plugin scaffold. By default the project is resolved from the current working
 directory or from the script's containing generated project.
 
-Product skills are checked against the Agent Skills specification and the
-portable skill runtime manifest. When the optional 'pyodide' devDependency is
-installed, Python twin entrypoints are also syntax-checked and smoke-executed
+Product skills are checked against the Agent Skills specification, and every
+present runtime manifest is validated. When the optional 'pyodide' devDependency
+is installed, Python entrypoints are also syntax-checked and smoke-executed
 in a WebAssembly CPython sandbox.
 
 Options:
@@ -668,9 +668,9 @@ export async function validateProject(projectRoot, options = {}) {
       }
       if (productSkillFiles.includes(skillFile)) {
         const manifestPath = join(dirname(skillFile), "skill-runtime.json")
-        if (!existsSync(manifestPath)) {
+        if (!existsSync(manifestPath) && (runtime === "npm" || directoryName === pluginName)) {
           errors.push(`${skillFile}: missing skill-runtime.json`)
-        } else {
+        } else if (existsSync(manifestPath)) {
           runtimeManifestPaths.push(relative(pluginRoot, manifestPath))
         }
         await checkProductSkillRuntime(skillFile, content, frontmatter, errors, pythonScripts, runtime)
@@ -678,7 +678,7 @@ export async function validateProject(projectRoot, options = {}) {
     }
   }
 
-  if (runtimeManifestPaths.length === productSkillFiles.length && runtimeManifestPaths.length > 0) {
+  if (runtimeManifestPaths.length > 0) {
     try {
       const tools = await discoverSkillTools({ pluginRoot, manifestPaths: runtimeManifestPaths })
       for (const tool of tools) {

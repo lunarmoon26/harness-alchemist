@@ -61,6 +61,8 @@ The package root exports OpenCode. The `./deepseek` subpath exports Cordis. Keep
 tag to match the committed `package.json` version, checks that the tagged
 commit is contained in `main`, verifies synchronized metadata and the package,
 then publishes through npm Trusted Publishing with provenance.
+Prerelease versions publish under npm's `next` dist-tag; stable versions publish
+under `latest`.
 
 Before the first release, configure the npm package's Trusted Publisher for
 GitHub Actions with the repository owner, repository name, workflow filename
