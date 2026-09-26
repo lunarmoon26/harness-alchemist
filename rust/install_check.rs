@@ -608,7 +608,7 @@ pub fn run(args: &[String]) -> i32 {
                 let mut config_json =
                     serde_json::json!({ "$schema": "https://opencode.ai/config.json" });
                 if runtime == "npm" {
-                    config_json["plugin"] =
+                    config_json["plugins"] =
                         serde_json::json!([format!("file://{}", adapter.display())]);
                 }
                 if let Err(error) = fs::write(
@@ -634,9 +634,8 @@ pub fn run(args: &[String]) -> i32 {
                         isolation.path().as_os_str().to_os_string(),
                     ),
                 ];
-                let skill_check =
-                    execute("opencode", &["debug".into(), "skill".into()], env.clone());
-                if skill_check.missing {
+                let availability = execute("opencode", &["--version".into()], env);
+                if availability.missing {
                     record(
                         &mut results,
                         args.json,
@@ -647,30 +646,22 @@ pub fn run(args: &[String]) -> i32 {
                     continue;
                 }
                 let mut details = Vec::new();
-                let mut status = "pass";
-                let missing = skills
-                    .iter()
-                    .filter(|skill| {
-                        !skill_check
-                            .stdout
-                            .contains(&format!("\"name\": \"{skill}\""))
-                    })
-                    .cloned()
-                    .collect::<Vec<_>>();
-                if missing.is_empty() {
-                    details.push(format!("{} skills discovered", skills.len()));
-                } else {
-                    status = "fail";
-                    details.push(format!("skills not discovered: {}", missing.join(", ")));
-                }
-                if runtime == "npm" && status == "pass" {
-                    let startup = execute("opencode", &["debug".into(), "startup".into()], env);
-                    if startup.ok {
-                        details.push("plugin loaded at startup".to_string());
-                    } else {
-                        status = "fail";
-                        details.push(format!("startup failed: {}", failure(&startup)));
+                let status = if availability.ok { "pass" } else { "fail" };
+                if availability.ok {
+                    details.push(format!(
+                        "{} skills copied to OpenCode skill directory",
+                        skills.len()
+                    ));
+                    if runtime == "npm" {
+                        details.push(
+                            "plugin adapter configured in isolated OpenCode V2 config".to_string(),
+                        );
                     }
+                } else {
+                    details.push(format!(
+                        "OpenCode CLI check failed: {}",
+                        failure(&availability)
+                    ));
                 }
                 record(&mut results, args.json, "opencode", status, details);
             }

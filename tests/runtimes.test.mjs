@@ -12,23 +12,35 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)))
 
 function executionContext() {
   return {
-    directory: root,
-    worktree: root,
-    abort: new AbortController().signal,
-    ask: async () => {},
-    metadata: () => {},
+    signal: new AbortController().signal,
     sessionID: "session",
     messageID: "message",
     agent: "test",
   }
 }
 
+async function registeredOpenCodeTool(name) {
+  let entry
+  await opencodePlugin.setup({
+    location: { directory: root },
+    tool: {
+      transform(callback) {
+        callback({
+          add(definition) {
+            if (definition.name === name) entry = definition
+          },
+        })
+      },
+    },
+  })
+  return entry
+}
+
 test("OpenCode tool delegates to the shared skill script", async () => {
-  const hooks = await opencodePlugin({})
-  const entry = hooks.tool?.["harness_alchemist_run"]
+  const entry = await registeredOpenCodeTool("harness_alchemist_run")
   assert.equal(typeof entry?.execute, "function")
   const result = await entry.execute({ request: "hello" }, executionContext())
-  assert.deepEqual(JSON.parse(result), {
+  assert.deepEqual(JSON.parse(result.content), {
     ok: true,
     plugin: "harness-alchemist",
     echo: { request: "hello" },

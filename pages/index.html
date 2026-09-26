@@ -259,8 +259,8 @@
       </div>
       <div class="card">
         <h3><i data-lucide="package"></i> OpenCode <span class="badge">npm</span></h3>
-        <p>Shared runtime maps portable tool manifests into plugin hooks.</p>
-        <code class="cmdline">"plugin": ["my-plugin"]</code>
+        <p>Shared runtime maps portable tool manifests into V2 plugin tools.</p>
+        <code class="cmdline">"plugins": ["my-plugin"]</code>
       </div>
       <div class="card">
         <h3><i data-lucide="orbit"></i> Antigravity <span class="badge">native</span></h3>
@@ -298,14 +298,18 @@ stdout.<span class="fn">write</span>(<span class="fn">JSON</span>.<span class="f
       </div>
       <div class="codeblock">
         <div class="bar"><span class="title">src/opencode.ts — runtime adapter</span><button class="copy" type="button" data-copy="adapter">copy</button></div>
-<pre id="adapter"><span class="kw">import</span> { <span class="fn">createOpenCodePlugin</span> } <span class="kw">from</span>
-  <span class="str">"@lunarmoon26/agent-skill-runtime/opencode"</span>
+<pre id="adapter"><span class="kw">import</span> { <span class="fn">Plugin</span> } <span class="kw">from</span> <span class="str">"@opencode/plugin"</span>
+<span class="kw">import</span> { <span class="fn">createSkillRuntime</span> } <span class="kw">from</span>
+  <span class="str">"@lunarmoon26/agent-skill-runtime"</span>
 
-<span class="kw">const</span> plugin = <span class="fn">createOpenCodePlugin</span>({
-  pluginRoot,
-  manifestPaths: [
-    <span class="str">"skills/my-plugin/skill-runtime.json"</span>,
-  ],
+<span class="kw">const</span> plugin = <span class="fn">Plugin</span>.<span class="fn">define</span>({
+  id: <span class="str">"my-plugin"</span>,
+  <span class="kw">async</span> setup(ctx) {
+    <span class="kw">const</span> runtime = <span class="kw">await</span> <span class="fn">createSkillRuntime</span>({ pluginRoot })
+    <span class="kw">await</span> ctx.tool.<span class="fn">transform</span>((editor) =&gt; {
+      <span class="cm">// add tools from runtime.listTools()</span>
+    })
+  },
 })
 
 <span class="kw">export default</span> plugin
