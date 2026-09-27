@@ -114,7 +114,7 @@ Install paths below are verified against real CLIs before shipping in the templa
 | --- | --- | --- | --- |
 | Claude Code | bundled natively | — | `claude plugin install <name>@<marketplace>` |
 | Codex/ChatGPT | bundled natively | — | `codex plugin add <name>@<marketplace>` |
-| OpenCode | via `~/.agents/skills/` | npm package hooks | `"plugin": ["<package>"]` in `opencode.json` |
+| OpenCode | via `~/.agents/skills/` | npm package plugin | `"plugins": ["<package>"]` in `opencode.json` |
 | Google Antigravity | nested bundle | — | `agy plugin validate . && agy plugin install .` |
 | DeepSeek Harness | profile filesystem roots | Cordis tool plugin | `dsh plugin --profile demo add <package-or-path>` |
 

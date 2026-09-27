@@ -42,23 +42,19 @@
     "node": ">=22.20.0"
   },
   "dependencies": {
-    "@lunarmoon26/agent-skill-runtime": "0.1.1"
+    "@lunarmoon26/agent-skill-runtime": "0.1.1",
+    "@opencode/plugin": "^2.0.18"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@opencode-ai/plugin": "^1.18.21"
+    "@deepseek-ai/cordis": "^4.0.1"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
-      "optional": true
-    },
-    "@opencode-ai/plugin": {
       "optional": true
     }
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@opencode-ai/plugin": "^1.18.21",
     "@types/node": "^26.2.0",
     "typescript": "^5.9.3"
   },

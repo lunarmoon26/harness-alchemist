@@ -97,7 +97,7 @@ After publishing `{{PACKAGE_NAME}}`, add it to `opencode.json`:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": [{{PACKAGE_NAME_JSON}}]
+  "plugins": [{{PACKAGE_NAME_JSON}}]
 }
 ```
 
@@ -105,7 +105,7 @@ For an unpublished checkout, point the entry at the built adapter instead:
 
 ```json
 {
-  "plugin": ["file:///absolute/path/to/{{NAME}}/dist/opencode.js"]
+  "plugins": ["/absolute/path/to/{{NAME}}/dist/opencode.js"]
 }
 ```
 

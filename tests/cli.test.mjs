@@ -87,7 +87,7 @@ test("creates and validates a recursively agent-developable project", async () =
   )
   assert.match(
     await readFile(join(output, "src/opencode.ts"), "utf8"),
-    /createOpenCodePlugin/,
+    /Plugin\.define/,
   )
   const runtimeManifest = JSON.parse(
     await readFile(join(output, "skills/recursive-plugin/skill-runtime.json"), "utf8"),
@@ -96,6 +96,7 @@ test("creates and validates a recursively agent-developable project", async () =
   assert.equal(runtimeManifest.tools[0].entrypoint.path, "scripts/main.mjs")
   const generatedPackage = JSON.parse(await readFile(join(output, "package.json"), "utf8"))
   assert.equal(generatedPackage.dependencies["@lunarmoon26/agent-skill-runtime"], "0.1.1")
+  assert.equal(generatedPackage.dependencies["@opencode/plugin"], "^2.0.18")
   assert.equal(
     JSON.parse(await readFile(join(output, "plugin.json"), "utf8")).$schema,
     "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",

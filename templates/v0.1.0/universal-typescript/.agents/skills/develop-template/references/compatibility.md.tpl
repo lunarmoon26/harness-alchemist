@@ -22,7 +22,7 @@ non-JavaScript repositories to skills-only validation.
 | --- | --- | --- |
 | Claude Code | `.claude-plugin/` | Components stay at repository root; marketplace source is `./`. |
 | Codex/ChatGPT | `.codex-plugin/`, `.agents/plugins/` | Local marketplace entries require policy and category. |
-| OpenCode | `src/opencode.ts` | Package root exports a plugin function returning hooks. |
+| OpenCode | `src/opencode.ts` | Package root exports an OpenCode V2 plugin definition. |
 | Agent Plugins / Antigravity | `plugin.json`, `mcp.json` | Root metadata uses Agent Plugins 1.0; skills use nested `<name>/SKILL.md`. |
 | DeepSeek | `src/deepseek.ts`, `cordis.patch.yml` | Function plugin injects `tools`, uses named exports, and has no default export. |
 
